@@ -306,7 +306,11 @@ func generateComputedProperty(_ compProp:ComputedProperty, cases:[EnumCase], sco
     let entries:[String] = cases.compactMap {
         if let val = $0.computedProperties[compProp.caseKey] {
             var entry = COMPUTED_PROPERTY_CASE
-            entry = entry.replacingOccurrences(of: "{{+case_title+}}", with: $0.title)
+            if $0.title == "p2p" {
+                entry = entry.replacingOccurrences(of: "{{+case_title+}}", with: $0.title + ", .ipfs")
+            } else {
+                entry = entry.replacingOccurrences(of: "{{+case_title+}}", with: $0.title)
+            }
             if rawType.lowercased().contains("string") {
                 entry = entry.replacingOccurrences(of: "{{+case_value+}}", with: "\"\(val)\"")
             } else {
