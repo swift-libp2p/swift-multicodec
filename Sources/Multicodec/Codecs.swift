@@ -2,8 +2,8 @@
 //  Codecs.swift
 //
 //
-//  Created by Brandon Toms on 5/1/22.
-//  Updated on 5/1/22
+//  Created by Brandon Toms on 9/14/20.
+//  Updated on 5/15/22
 
 import Foundation
 import VarInt
@@ -19,489 +19,496 @@ import VarInt
 /// swift run update-codecs
 /// ```
 public enum Codecs:UInt64, CaseIterable, Equatable {
-    case identity                     = 0x00
-	case cidv1                        = 0x01
-	case cidv2                        = 0x02
-	case cidv3                        = 0x03
-	case ip4                          = 0x04
-	case tcp                          = 0x06
-	case sha1                         = 0x11
-	case sha2_256                     = 0x12
-	case sha2_512                     = 0x13
-	case sha3_512                     = 0x14
-	case sha3_384                     = 0x15
-	case sha3_256                     = 0x16
-	case sha3_224                     = 0x17
-	case shake_128                    = 0x18
-	case shake_256                    = 0x19
-	case keccak_224                   = 0x1a
-	case keccak_256                   = 0x1b
-	case keccak_384                   = 0x1c
-	case keccak_512                   = 0x1d
-	case blake3                       = 0x1e
-	case sha2_384                     = 0x20
-	case dccp                         = 0x21
-	case murmur3_x64_64               = 0x22
-	case murmur3_32                   = 0x23
-	case ip6                          = 0x29
-	case ip6zone                      = 0x2a
-	case path                         = 0x2f
-	case multicodec                   = 0x30
-	case multihash                    = 0x31
-	case multiaddr                    = 0x32
-	case multibase                    = 0x33
-	case dns                          = 0x35
-	case dns4                         = 0x36
-	case dns6                         = 0x37
-	case dnsaddr                      = 0x38
-	case protobuf                     = 0x50
-	case cbor                         = 0x51
-	case raw                          = 0x55
-	case dbl_sha2_256                 = 0x56
-	case rlp                          = 0x60
-	case bencode                      = 0x63
-	case dag_pb                       = 0x70
-	case dag_cbor                     = 0x71
-	case libp2p_key                   = 0x72
-	case git_raw                      = 0x78
-	case torrent_info                 = 0x7b
-	case torrent_file                 = 0x7c
-	case leofcoin_block               = 0x81
-	case leofcoin_tx                  = 0x82
-	case leofcoin_pr                  = 0x83
-	case sctp                         = 0x84
-	case dag_jose                     = 0x85
-	case dag_cose                     = 0x86
-	case eth_block                    = 0x90
-	case eth_block_list               = 0x91
-	case eth_tx_trie                  = 0x92
-	case eth_tx                       = 0x93
-	case eth_tx_receipt_trie          = 0x94
-	case eth_tx_receipt               = 0x95
-	case eth_state_trie               = 0x96
-	case eth_account_snapshot         = 0x97
-	case eth_storage_trie             = 0x98
-	case eth_receipt_log_trie         = 0x99
-	case eth_reciept_log              = 0x9a
-	case aes_128                      = 0xa0
-	case aes_192                      = 0xa1
-	case aes_256                      = 0xa2
-	case chacha_128                   = 0xa3
-	case chacha_256                   = 0xa4
-	case bitcoin_block                = 0xb0
-	case bitcoin_tx                   = 0xb1
-	case bitcoin_witness_commitment   = 0xb2
-	case zcash_block                  = 0xc0
-	case zcash_tx                     = 0xc1
-	case caip_50                      = 0xca
-	case streamid                     = 0xce
-	case stellar_block                = 0xd0
-	case stellar_tx                   = 0xd1
-	case md4                          = 0xd4
-	case md5                          = 0xd5
-	case bmt                          = 0xd6
-	case decred_block                 = 0xe0
-	case decred_tx                    = 0xe1
-	case ipld_ns                      = 0xe2
-	case ipfs_ns                      = 0xe3
-	case swarm_ns                     = 0xe4
-	case ipns_ns                      = 0xe5
-	case zeronet                      = 0xe6
-	case secp256k1_pub                = 0xe7
-	case bls12_381_g1_pub             = 0xea
-	case bls12_381_g2_pub             = 0xeb
-	case x25519_pub                   = 0xec
-	case ed25519_pub                  = 0xed
-	case bls12_381_g1g2_pub           = 0xee
-	case dash_block                   = 0xf0
-	case dash_tx                      = 0xf1
-	case swarm_manifest               = 0xfa
-	case swarm_feed                   = 0xfb
-	case udp                          = 0x0111
-	case p2p_webrtc_star              = 0x0113
-	case p2p_webrtc_direct            = 0x0114
-	case p2p_stardust                 = 0x0115
-	case p2p_circuit                  = 0x0122
-	case dag_json                     = 0x0129
-	case udt                          = 0x012d
-	case utp                          = 0x012e
-	case unix                         = 0x0190
-	case thread                       = 0x0196
-	case p2p                          = 0x01a5
-	case https                        = 0x01bb
-	case onion                        = 0x01bc
-	case onion3                       = 0x01bd
-	case garlic64                     = 0x01be
-	case garlic32                     = 0x01bf
-	case tls                          = 0x01c0
-	case noise                        = 0x01c6
-	case quic                         = 0x01cc
-	case ws                           = 0x01dd
-	case wss                          = 0x01de
-	case p2p_websocket_star           = 0x01df
-	case http                         = 0x01e0
-	case swhid_1_snp                  = 0x01f0
-	case json                         = 0x0200
-	case messagepack                  = 0x0201
-	case libp2p_peer_record           = 0x0301
-	case libp2p_relay_rsvp            = 0x0302
-	case car_index_sorted             = 0x0400
-	case car_multihash_index_sorted   = 0x0401
-	case sha2_256_trunc254_padded     = 0x1012
-	case sha2_224                     = 0x1013
-	case sha2_512_224                 = 0x1014
-	case sha2_512_256                 = 0x1015
-	case murmur3_x64_128              = 0x1022
-	case ripemd_128                   = 0x1052
-	case ripemd_160                   = 0x1053
-	case ripemd_256                   = 0x1054
-	case ripemd_320                   = 0x1055
-	case x11                          = 0x1100
-	case p256_pub                     = 0x1200
-	case p384_pub                     = 0x1201
-	case p521_pub                     = 0x1202
-	case ed448_pub                    = 0x1203
-	case x448_pub                     = 0x1204
-	case rsa_pub                      = 0x1205
-	case ed25519_priv                 = 0x1300
-	case secp256k1_priv               = 0x1301
-	case x25519_priv                  = 0x1302
-	case kangarootwelve               = 0x1d01
-	case sm3_256                      = 0x534d
-	case blake2b_8                    = 0xb201
-	case blake2b_16                   = 0xb202
-	case blake2b_24                   = 0xb203
-	case blake2b_32                   = 0xb204
-	case blake2b_40                   = 0xb205
-	case blake2b_48                   = 0xb206
-	case blake2b_56                   = 0xb207
-	case blake2b_64                   = 0xb208
-	case blake2b_72                   = 0xb209
-	case blake2b_80                   = 0xb20a
-	case blake2b_88                   = 0xb20b
-	case blake2b_96                   = 0xb20c
-	case blake2b_104                  = 0xb20d
-	case blake2b_112                  = 0xb20e
-	case blake2b_120                  = 0xb20f
-	case blake2b_128                  = 0xb210
-	case blake2b_136                  = 0xb211
-	case blake2b_144                  = 0xb212
-	case blake2b_152                  = 0xb213
-	case blake2b_160                  = 0xb214
-	case blake2b_168                  = 0xb215
-	case blake2b_176                  = 0xb216
-	case blake2b_184                  = 0xb217
-	case blake2b_192                  = 0xb218
-	case blake2b_200                  = 0xb219
-	case blake2b_208                  = 0xb21a
-	case blake2b_216                  = 0xb21b
-	case blake2b_224                  = 0xb21c
-	case blake2b_232                  = 0xb21d
-	case blake2b_240                  = 0xb21e
-	case blake2b_248                  = 0xb21f
-	case blake2b_256                  = 0xb220
-	case blake2b_264                  = 0xb221
-	case blake2b_272                  = 0xb222
-	case blake2b_280                  = 0xb223
-	case blake2b_288                  = 0xb224
-	case blake2b_296                  = 0xb225
-	case blake2b_304                  = 0xb226
-	case blake2b_312                  = 0xb227
-	case blake2b_320                  = 0xb228
-	case blake2b_328                  = 0xb229
-	case blake2b_336                  = 0xb22a
-	case blake2b_344                  = 0xb22b
-	case blake2b_352                  = 0xb22c
-	case blake2b_360                  = 0xb22d
-	case blake2b_368                  = 0xb22e
-	case blake2b_376                  = 0xb22f
-	case blake2b_384                  = 0xb230
-	case blake2b_392                  = 0xb231
-	case blake2b_400                  = 0xb232
-	case blake2b_408                  = 0xb233
-	case blake2b_416                  = 0xb234
-	case blake2b_424                  = 0xb235
-	case blake2b_432                  = 0xb236
-	case blake2b_440                  = 0xb237
-	case blake2b_448                  = 0xb238
-	case blake2b_456                  = 0xb239
-	case blake2b_464                  = 0xb23a
-	case blake2b_472                  = 0xb23b
-	case blake2b_480                  = 0xb23c
-	case blake2b_488                  = 0xb23d
-	case blake2b_496                  = 0xb23e
-	case blake2b_504                  = 0xb23f
-	case blake2b_512                  = 0xb240
-	case blake2s_8                    = 0xb241
-	case blake2s_16                   = 0xb242
-	case blake2s_24                   = 0xb243
-	case blake2s_32                   = 0xb244
-	case blake2s_40                   = 0xb245
-	case blake2s_48                   = 0xb246
-	case blake2s_56                   = 0xb247
-	case blake2s_64                   = 0xb248
-	case blake2s_72                   = 0xb249
-	case blake2s_80                   = 0xb24a
-	case blake2s_88                   = 0xb24b
-	case blake2s_96                   = 0xb24c
-	case blake2s_104                  = 0xb24d
-	case blake2s_112                  = 0xb24e
-	case blake2s_120                  = 0xb24f
-	case blake2s_128                  = 0xb250
-	case blake2s_136                  = 0xb251
-	case blake2s_144                  = 0xb252
-	case blake2s_152                  = 0xb253
-	case blake2s_160                  = 0xb254
-	case blake2s_168                  = 0xb255
-	case blake2s_176                  = 0xb256
-	case blake2s_184                  = 0xb257
-	case blake2s_192                  = 0xb258
-	case blake2s_200                  = 0xb259
-	case blake2s_208                  = 0xb25a
-	case blake2s_216                  = 0xb25b
-	case blake2s_224                  = 0xb25c
-	case blake2s_232                  = 0xb25d
-	case blake2s_240                  = 0xb25e
-	case blake2s_248                  = 0xb25f
-	case blake2s_256                  = 0xb260
-	case skein256_8                   = 0xb301
-	case skein256_16                  = 0xb302
-	case skein256_24                  = 0xb303
-	case skein256_32                  = 0xb304
-	case skein256_40                  = 0xb305
-	case skein256_48                  = 0xb306
-	case skein256_56                  = 0xb307
-	case skein256_64                  = 0xb308
-	case skein256_72                  = 0xb309
-	case skein256_80                  = 0xb30a
-	case skein256_88                  = 0xb30b
-	case skein256_96                  = 0xb30c
-	case skein256_104                 = 0xb30d
-	case skein256_112                 = 0xb30e
-	case skein256_120                 = 0xb30f
-	case skein256_128                 = 0xb310
-	case skein256_136                 = 0xb311
-	case skein256_144                 = 0xb312
-	case skein256_152                 = 0xb313
-	case skein256_160                 = 0xb314
-	case skein256_168                 = 0xb315
-	case skein256_176                 = 0xb316
-	case skein256_184                 = 0xb317
-	case skein256_192                 = 0xb318
-	case skein256_200                 = 0xb319
-	case skein256_208                 = 0xb31a
-	case skein256_216                 = 0xb31b
-	case skein256_224                 = 0xb31c
-	case skein256_232                 = 0xb31d
-	case skein256_240                 = 0xb31e
-	case skein256_248                 = 0xb31f
-	case skein256_256                 = 0xb320
-	case skein512_8                   = 0xb321
-	case skein512_16                  = 0xb322
-	case skein512_24                  = 0xb323
-	case skein512_32                  = 0xb324
-	case skein512_40                  = 0xb325
-	case skein512_48                  = 0xb326
-	case skein512_56                  = 0xb327
-	case skein512_64                  = 0xb328
-	case skein512_72                  = 0xb329
-	case skein512_80                  = 0xb32a
-	case skein512_88                  = 0xb32b
-	case skein512_96                  = 0xb32c
-	case skein512_104                 = 0xb32d
-	case skein512_112                 = 0xb32e
-	case skein512_120                 = 0xb32f
-	case skein512_128                 = 0xb330
-	case skein512_136                 = 0xb331
-	case skein512_144                 = 0xb332
-	case skein512_152                 = 0xb333
-	case skein512_160                 = 0xb334
-	case skein512_168                 = 0xb335
-	case skein512_176                 = 0xb336
-	case skein512_184                 = 0xb337
-	case skein512_192                 = 0xb338
-	case skein512_200                 = 0xb339
-	case skein512_208                 = 0xb33a
-	case skein512_216                 = 0xb33b
-	case skein512_224                 = 0xb33c
-	case skein512_232                 = 0xb33d
-	case skein512_240                 = 0xb33e
-	case skein512_248                 = 0xb33f
-	case skein512_256                 = 0xb340
-	case skein512_264                 = 0xb341
-	case skein512_272                 = 0xb342
-	case skein512_280                 = 0xb343
-	case skein512_288                 = 0xb344
-	case skein512_296                 = 0xb345
-	case skein512_304                 = 0xb346
-	case skein512_312                 = 0xb347
-	case skein512_320                 = 0xb348
-	case skein512_328                 = 0xb349
-	case skein512_336                 = 0xb34a
-	case skein512_344                 = 0xb34b
-	case skein512_352                 = 0xb34c
-	case skein512_360                 = 0xb34d
-	case skein512_368                 = 0xb34e
-	case skein512_376                 = 0xb34f
-	case skein512_384                 = 0xb350
-	case skein512_392                 = 0xb351
-	case skein512_400                 = 0xb352
-	case skein512_408                 = 0xb353
-	case skein512_416                 = 0xb354
-	case skein512_424                 = 0xb355
-	case skein512_432                 = 0xb356
-	case skein512_440                 = 0xb357
-	case skein512_448                 = 0xb358
-	case skein512_456                 = 0xb359
-	case skein512_464                 = 0xb35a
-	case skein512_472                 = 0xb35b
-	case skein512_480                 = 0xb35c
-	case skein512_488                 = 0xb35d
-	case skein512_496                 = 0xb35e
-	case skein512_504                 = 0xb35f
-	case skein512_512                 = 0xb360
-	case skein1024_8                  = 0xb361
-	case skein1024_16                 = 0xb362
-	case skein1024_24                 = 0xb363
-	case skein1024_32                 = 0xb364
-	case skein1024_40                 = 0xb365
-	case skein1024_48                 = 0xb366
-	case skein1024_56                 = 0xb367
-	case skein1024_64                 = 0xb368
-	case skein1024_72                 = 0xb369
-	case skein1024_80                 = 0xb36a
-	case skein1024_88                 = 0xb36b
-	case skein1024_96                 = 0xb36c
-	case skein1024_104                = 0xb36d
-	case skein1024_112                = 0xb36e
-	case skein1024_120                = 0xb36f
-	case skein1024_128                = 0xb370
-	case skein1024_136                = 0xb371
-	case skein1024_144                = 0xb372
-	case skein1024_152                = 0xb373
-	case skein1024_160                = 0xb374
-	case skein1024_168                = 0xb375
-	case skein1024_176                = 0xb376
-	case skein1024_184                = 0xb377
-	case skein1024_192                = 0xb378
-	case skein1024_200                = 0xb379
-	case skein1024_208                = 0xb37a
-	case skein1024_216                = 0xb37b
-	case skein1024_224                = 0xb37c
-	case skein1024_232                = 0xb37d
-	case skein1024_240                = 0xb37e
-	case skein1024_248                = 0xb37f
-	case skein1024_256                = 0xb380
-	case skein1024_264                = 0xb381
-	case skein1024_272                = 0xb382
-	case skein1024_280                = 0xb383
-	case skein1024_288                = 0xb384
-	case skein1024_296                = 0xb385
-	case skein1024_304                = 0xb386
-	case skein1024_312                = 0xb387
-	case skein1024_320                = 0xb388
-	case skein1024_328                = 0xb389
-	case skein1024_336                = 0xb38a
-	case skein1024_344                = 0xb38b
-	case skein1024_352                = 0xb38c
-	case skein1024_360                = 0xb38d
-	case skein1024_368                = 0xb38e
-	case skein1024_376                = 0xb38f
-	case skein1024_384                = 0xb390
-	case skein1024_392                = 0xb391
-	case skein1024_400                = 0xb392
-	case skein1024_408                = 0xb393
-	case skein1024_416                = 0xb394
-	case skein1024_424                = 0xb395
-	case skein1024_432                = 0xb396
-	case skein1024_440                = 0xb397
-	case skein1024_448                = 0xb398
-	case skein1024_456                = 0xb399
-	case skein1024_464                = 0xb39a
-	case skein1024_472                = 0xb39b
-	case skein1024_480                = 0xb39c
-	case skein1024_488                = 0xb39d
-	case skein1024_496                = 0xb39e
-	case skein1024_504                = 0xb39f
-	case skein1024_512                = 0xb3a0
-	case skein1024_520                = 0xb3a1
-	case skein1024_528                = 0xb3a2
-	case skein1024_536                = 0xb3a3
-	case skein1024_544                = 0xb3a4
-	case skein1024_552                = 0xb3a5
-	case skein1024_560                = 0xb3a6
-	case skein1024_568                = 0xb3a7
-	case skein1024_576                = 0xb3a8
-	case skein1024_584                = 0xb3a9
-	case skein1024_592                = 0xb3aa
-	case skein1024_600                = 0xb3ab
-	case skein1024_608                = 0xb3ac
-	case skein1024_616                = 0xb3ad
-	case skein1024_624                = 0xb3ae
-	case skein1024_632                = 0xb3af
-	case skein1024_640                = 0xb3b0
-	case skein1024_648                = 0xb3b1
-	case skein1024_656                = 0xb3b2
-	case skein1024_664                = 0xb3b3
-	case skein1024_672                = 0xb3b4
-	case skein1024_680                = 0xb3b5
-	case skein1024_688                = 0xb3b6
-	case skein1024_696                = 0xb3b7
-	case skein1024_704                = 0xb3b8
-	case skein1024_712                = 0xb3b9
-	case skein1024_720                = 0xb3ba
-	case skein1024_728                = 0xb3bb
-	case skein1024_736                = 0xb3bc
-	case skein1024_744                = 0xb3bd
-	case skein1024_752                = 0xb3be
-	case skein1024_760                = 0xb3bf
-	case skein1024_768                = 0xb3c0
-	case skein1024_776                = 0xb3c1
-	case skein1024_784                = 0xb3c2
-	case skein1024_792                = 0xb3c3
-	case skein1024_800                = 0xb3c4
-	case skein1024_808                = 0xb3c5
-	case skein1024_816                = 0xb3c6
-	case skein1024_824                = 0xb3c7
-	case skein1024_832                = 0xb3c8
-	case skein1024_840                = 0xb3c9
-	case skein1024_848                = 0xb3ca
-	case skein1024_856                = 0xb3cb
-	case skein1024_864                = 0xb3cc
-	case skein1024_872                = 0xb3cd
-	case skein1024_880                = 0xb3ce
-	case skein1024_888                = 0xb3cf
-	case skein1024_896                = 0xb3d0
-	case skein1024_904                = 0xb3d1
-	case skein1024_912                = 0xb3d2
-	case skein1024_920                = 0xb3d3
-	case skein1024_928                = 0xb3d4
-	case skein1024_936                = 0xb3d5
-	case skein1024_944                = 0xb3d6
-	case skein1024_952                = 0xb3d7
-	case skein1024_960                = 0xb3d8
-	case skein1024_968                = 0xb3d9
-	case skein1024_976                = 0xb3da
-	case skein1024_984                = 0xb3db
-	case skein1024_992                = 0xb3dc
-	case skein1024_1000               = 0xb3dd
-	case skein1024_1008               = 0xb3de
-	case skein1024_1016               = 0xb3df
-	case skein1024_1024               = 0xb3e0
-	case poseidon_bls12_381_a2_fc1    = 0xb401
-	case poseidon_bls12_381_a2_fc1_sc = 0xb402
-	case zeroxcert_imprint_256        = 0xce11
-	case fil_commitment_unsealed      = 0xf101
-	case fil_commitment_sealed        = 0xf102
-	case plaintextv2                  = 0x706c61
-	case holochain_adr_v0             = 0x807124
-	case holochain_adr_v1             = 0x817124
-	case holochain_key_v0             = 0x947124
-	case holochain_key_v1             = 0x957124
-	case holochain_sig_v0             = 0xa27124
-	case holochain_sig_v1             = 0xa37124
-	case skynet_ns                    = 0xb19910
-	case arweave_ns                   = 0xb29910
+    case identity                       = 0x00
+	case cidv1                          = 0x01
+	case cidv2                          = 0x02
+	case cidv3                          = 0x03
+	case ip4                            = 0x04
+	case tcp                            = 0x06
+	case sha1                           = 0x11
+	case sha2_256                       = 0x12
+	case sha2_512                       = 0x13
+	case sha3_512                       = 0x14
+	case sha3_384                       = 0x15
+	case sha3_256                       = 0x16
+	case sha3_224                       = 0x17
+	case shake_128                      = 0x18
+	case shake_256                      = 0x19
+	case keccak_224                     = 0x1a
+	case keccak_256                     = 0x1b
+	case keccak_384                     = 0x1c
+	case keccak_512                     = 0x1d
+	case blake3                         = 0x1e
+	case sha2_384                       = 0x20
+	case dccp                           = 0x21
+	case murmur3_x64_64                 = 0x22
+	case murmur3_32                     = 0x23
+	case ip6                            = 0x29
+	case ip6zone                        = 0x2a
+	case path                           = 0x2f
+	case multicodec                     = 0x30
+	case multihash                      = 0x31
+	case multiaddr                      = 0x32
+	case multibase                      = 0x33
+	case dns                            = 0x35
+	case dns4                           = 0x36
+	case dns6                           = 0x37
+	case dnsaddr                        = 0x38
+	case protobuf                       = 0x50
+	case cbor                           = 0x51
+	case raw                            = 0x55
+	case dbl_sha2_256                   = 0x56
+	case rlp                            = 0x60
+	case bencode                        = 0x63
+	case dag_pb                         = 0x70
+	case dag_cbor                       = 0x71
+	case libp2p_key                     = 0x72
+	case git_raw                        = 0x78
+	case torrent_info                   = 0x7b
+	case torrent_file                   = 0x7c
+	case leofcoin_block                 = 0x81
+	case leofcoin_tx                    = 0x82
+	case leofcoin_pr                    = 0x83
+	case sctp                           = 0x84
+	case dag_jose                       = 0x85
+	case dag_cose                       = 0x86
+	case eth_block                      = 0x90
+	case eth_block_list                 = 0x91
+	case eth_tx_trie                    = 0x92
+	case eth_tx                         = 0x93
+	case eth_tx_receipt_trie            = 0x94
+	case eth_tx_receipt                 = 0x95
+	case eth_state_trie                 = 0x96
+	case eth_account_snapshot           = 0x97
+	case eth_storage_trie               = 0x98
+	case eth_receipt_log_trie           = 0x99
+	case eth_reciept_log                = 0x9a
+	case aes_128                        = 0xa0
+	case aes_192                        = 0xa1
+	case aes_256                        = 0xa2
+	case chacha_128                     = 0xa3
+	case chacha_256                     = 0xa4
+	case bitcoin_block                  = 0xb0
+	case bitcoin_tx                     = 0xb1
+	case bitcoin_witness_commitment     = 0xb2
+	case zcash_block                    = 0xc0
+	case zcash_tx                       = 0xc1
+	case caip_50                        = 0xca
+	case streamid                       = 0xce
+	case stellar_block                  = 0xd0
+	case stellar_tx                     = 0xd1
+	case md4                            = 0xd4
+	case md5                            = 0xd5
+	case bmt                            = 0xd6
+	case decred_block                   = 0xe0
+	case decred_tx                      = 0xe1
+	case ipld_ns                        = 0xe2
+	case ipfs_ns                        = 0xe3
+	case swarm_ns                       = 0xe4
+	case ipns_ns                        = 0xe5
+	case zeronet                        = 0xe6
+	case secp256k1_pub                  = 0xe7
+	case bls12_381_g1_pub               = 0xea
+	case bls12_381_g2_pub               = 0xeb
+	case x25519_pub                     = 0xec
+	case ed25519_pub                    = 0xed
+	case bls12_381_g1g2_pub             = 0xee
+	case dash_block                     = 0xf0
+	case dash_tx                        = 0xf1
+	case swarm_manifest                 = 0xfa
+	case swarm_feed                     = 0xfb
+	case udp                            = 0x0111
+	case p2p_webrtc_star                = 0x0113
+	case p2p_webrtc_direct              = 0x0114
+	case p2p_stardust                   = 0x0115
+	case p2p_circuit                    = 0x0122
+	case dag_json                       = 0x0129
+	case udt                            = 0x012d
+	case utp                            = 0x012e
+	case unix                           = 0x0190
+	case thread                         = 0x0196
+	case p2p                            = 0x01a5
+	case https                          = 0x01bb
+	case onion                          = 0x01bc
+	case onion3                         = 0x01bd
+	case garlic64                       = 0x01be
+	case garlic32                       = 0x01bf
+	case tls                            = 0x01c0
+	case noise                          = 0x01c6
+	case quic                           = 0x01cc
+	case webtransport                   = 0x01d1
+	case ws                             = 0x01dd
+	case wss                            = 0x01de
+	case p2p_websocket_star             = 0x01df
+	case http                           = 0x01e0
+	case swhid_1_snp                    = 0x01f0
+	case json                           = 0x0200
+	case messagepack                    = 0x0201
+	case car                            = 0x0202
+	case libp2p_peer_record             = 0x0301
+	case libp2p_relay_rsvp              = 0x0302
+	case car_index_sorted               = 0x0400
+	case car_multihash_index_sorted     = 0x0401
+	case transport_bitswap              = 0x0900
+	case transport_graphsync_filecoinv1 = 0x0910
+	case sha2_256_trunc254_padded       = 0x1012
+	case sha2_224                       = 0x1013
+	case sha2_512_224                   = 0x1014
+	case sha2_512_256                   = 0x1015
+	case murmur3_x64_128                = 0x1022
+	case ripemd_128                     = 0x1052
+	case ripemd_160                     = 0x1053
+	case ripemd_256                     = 0x1054
+	case ripemd_320                     = 0x1055
+	case x11                            = 0x1100
+	case p256_pub                       = 0x1200
+	case p384_pub                       = 0x1201
+	case p521_pub                       = 0x1202
+	case ed448_pub                      = 0x1203
+	case x448_pub                       = 0x1204
+	case rsa_pub                        = 0x1205
+	case ed25519_priv                   = 0x1300
+	case secp256k1_priv                 = 0x1301
+	case x25519_priv                    = 0x1302
+	case kangarootwelve                 = 0x1d01
+	case sm3_256                        = 0x534d
+	case blake2b_8                      = 0xb201
+	case blake2b_16                     = 0xb202
+	case blake2b_24                     = 0xb203
+	case blake2b_32                     = 0xb204
+	case blake2b_40                     = 0xb205
+	case blake2b_48                     = 0xb206
+	case blake2b_56                     = 0xb207
+	case blake2b_64                     = 0xb208
+	case blake2b_72                     = 0xb209
+	case blake2b_80                     = 0xb20a
+	case blake2b_88                     = 0xb20b
+	case blake2b_96                     = 0xb20c
+	case blake2b_104                    = 0xb20d
+	case blake2b_112                    = 0xb20e
+	case blake2b_120                    = 0xb20f
+	case blake2b_128                    = 0xb210
+	case blake2b_136                    = 0xb211
+	case blake2b_144                    = 0xb212
+	case blake2b_152                    = 0xb213
+	case blake2b_160                    = 0xb214
+	case blake2b_168                    = 0xb215
+	case blake2b_176                    = 0xb216
+	case blake2b_184                    = 0xb217
+	case blake2b_192                    = 0xb218
+	case blake2b_200                    = 0xb219
+	case blake2b_208                    = 0xb21a
+	case blake2b_216                    = 0xb21b
+	case blake2b_224                    = 0xb21c
+	case blake2b_232                    = 0xb21d
+	case blake2b_240                    = 0xb21e
+	case blake2b_248                    = 0xb21f
+	case blake2b_256                    = 0xb220
+	case blake2b_264                    = 0xb221
+	case blake2b_272                    = 0xb222
+	case blake2b_280                    = 0xb223
+	case blake2b_288                    = 0xb224
+	case blake2b_296                    = 0xb225
+	case blake2b_304                    = 0xb226
+	case blake2b_312                    = 0xb227
+	case blake2b_320                    = 0xb228
+	case blake2b_328                    = 0xb229
+	case blake2b_336                    = 0xb22a
+	case blake2b_344                    = 0xb22b
+	case blake2b_352                    = 0xb22c
+	case blake2b_360                    = 0xb22d
+	case blake2b_368                    = 0xb22e
+	case blake2b_376                    = 0xb22f
+	case blake2b_384                    = 0xb230
+	case blake2b_392                    = 0xb231
+	case blake2b_400                    = 0xb232
+	case blake2b_408                    = 0xb233
+	case blake2b_416                    = 0xb234
+	case blake2b_424                    = 0xb235
+	case blake2b_432                    = 0xb236
+	case blake2b_440                    = 0xb237
+	case blake2b_448                    = 0xb238
+	case blake2b_456                    = 0xb239
+	case blake2b_464                    = 0xb23a
+	case blake2b_472                    = 0xb23b
+	case blake2b_480                    = 0xb23c
+	case blake2b_488                    = 0xb23d
+	case blake2b_496                    = 0xb23e
+	case blake2b_504                    = 0xb23f
+	case blake2b_512                    = 0xb240
+	case blake2s_8                      = 0xb241
+	case blake2s_16                     = 0xb242
+	case blake2s_24                     = 0xb243
+	case blake2s_32                     = 0xb244
+	case blake2s_40                     = 0xb245
+	case blake2s_48                     = 0xb246
+	case blake2s_56                     = 0xb247
+	case blake2s_64                     = 0xb248
+	case blake2s_72                     = 0xb249
+	case blake2s_80                     = 0xb24a
+	case blake2s_88                     = 0xb24b
+	case blake2s_96                     = 0xb24c
+	case blake2s_104                    = 0xb24d
+	case blake2s_112                    = 0xb24e
+	case blake2s_120                    = 0xb24f
+	case blake2s_128                    = 0xb250
+	case blake2s_136                    = 0xb251
+	case blake2s_144                    = 0xb252
+	case blake2s_152                    = 0xb253
+	case blake2s_160                    = 0xb254
+	case blake2s_168                    = 0xb255
+	case blake2s_176                    = 0xb256
+	case blake2s_184                    = 0xb257
+	case blake2s_192                    = 0xb258
+	case blake2s_200                    = 0xb259
+	case blake2s_208                    = 0xb25a
+	case blake2s_216                    = 0xb25b
+	case blake2s_224                    = 0xb25c
+	case blake2s_232                    = 0xb25d
+	case blake2s_240                    = 0xb25e
+	case blake2s_248                    = 0xb25f
+	case blake2s_256                    = 0xb260
+	case skein256_8                     = 0xb301
+	case skein256_16                    = 0xb302
+	case skein256_24                    = 0xb303
+	case skein256_32                    = 0xb304
+	case skein256_40                    = 0xb305
+	case skein256_48                    = 0xb306
+	case skein256_56                    = 0xb307
+	case skein256_64                    = 0xb308
+	case skein256_72                    = 0xb309
+	case skein256_80                    = 0xb30a
+	case skein256_88                    = 0xb30b
+	case skein256_96                    = 0xb30c
+	case skein256_104                   = 0xb30d
+	case skein256_112                   = 0xb30e
+	case skein256_120                   = 0xb30f
+	case skein256_128                   = 0xb310
+	case skein256_136                   = 0xb311
+	case skein256_144                   = 0xb312
+	case skein256_152                   = 0xb313
+	case skein256_160                   = 0xb314
+	case skein256_168                   = 0xb315
+	case skein256_176                   = 0xb316
+	case skein256_184                   = 0xb317
+	case skein256_192                   = 0xb318
+	case skein256_200                   = 0xb319
+	case skein256_208                   = 0xb31a
+	case skein256_216                   = 0xb31b
+	case skein256_224                   = 0xb31c
+	case skein256_232                   = 0xb31d
+	case skein256_240                   = 0xb31e
+	case skein256_248                   = 0xb31f
+	case skein256_256                   = 0xb320
+	case skein512_8                     = 0xb321
+	case skein512_16                    = 0xb322
+	case skein512_24                    = 0xb323
+	case skein512_32                    = 0xb324
+	case skein512_40                    = 0xb325
+	case skein512_48                    = 0xb326
+	case skein512_56                    = 0xb327
+	case skein512_64                    = 0xb328
+	case skein512_72                    = 0xb329
+	case skein512_80                    = 0xb32a
+	case skein512_88                    = 0xb32b
+	case skein512_96                    = 0xb32c
+	case skein512_104                   = 0xb32d
+	case skein512_112                   = 0xb32e
+	case skein512_120                   = 0xb32f
+	case skein512_128                   = 0xb330
+	case skein512_136                   = 0xb331
+	case skein512_144                   = 0xb332
+	case skein512_152                   = 0xb333
+	case skein512_160                   = 0xb334
+	case skein512_168                   = 0xb335
+	case skein512_176                   = 0xb336
+	case skein512_184                   = 0xb337
+	case skein512_192                   = 0xb338
+	case skein512_200                   = 0xb339
+	case skein512_208                   = 0xb33a
+	case skein512_216                   = 0xb33b
+	case skein512_224                   = 0xb33c
+	case skein512_232                   = 0xb33d
+	case skein512_240                   = 0xb33e
+	case skein512_248                   = 0xb33f
+	case skein512_256                   = 0xb340
+	case skein512_264                   = 0xb341
+	case skein512_272                   = 0xb342
+	case skein512_280                   = 0xb343
+	case skein512_288                   = 0xb344
+	case skein512_296                   = 0xb345
+	case skein512_304                   = 0xb346
+	case skein512_312                   = 0xb347
+	case skein512_320                   = 0xb348
+	case skein512_328                   = 0xb349
+	case skein512_336                   = 0xb34a
+	case skein512_344                   = 0xb34b
+	case skein512_352                   = 0xb34c
+	case skein512_360                   = 0xb34d
+	case skein512_368                   = 0xb34e
+	case skein512_376                   = 0xb34f
+	case skein512_384                   = 0xb350
+	case skein512_392                   = 0xb351
+	case skein512_400                   = 0xb352
+	case skein512_408                   = 0xb353
+	case skein512_416                   = 0xb354
+	case skein512_424                   = 0xb355
+	case skein512_432                   = 0xb356
+	case skein512_440                   = 0xb357
+	case skein512_448                   = 0xb358
+	case skein512_456                   = 0xb359
+	case skein512_464                   = 0xb35a
+	case skein512_472                   = 0xb35b
+	case skein512_480                   = 0xb35c
+	case skein512_488                   = 0xb35d
+	case skein512_496                   = 0xb35e
+	case skein512_504                   = 0xb35f
+	case skein512_512                   = 0xb360
+	case skein1024_8                    = 0xb361
+	case skein1024_16                   = 0xb362
+	case skein1024_24                   = 0xb363
+	case skein1024_32                   = 0xb364
+	case skein1024_40                   = 0xb365
+	case skein1024_48                   = 0xb366
+	case skein1024_56                   = 0xb367
+	case skein1024_64                   = 0xb368
+	case skein1024_72                   = 0xb369
+	case skein1024_80                   = 0xb36a
+	case skein1024_88                   = 0xb36b
+	case skein1024_96                   = 0xb36c
+	case skein1024_104                  = 0xb36d
+	case skein1024_112                  = 0xb36e
+	case skein1024_120                  = 0xb36f
+	case skein1024_128                  = 0xb370
+	case skein1024_136                  = 0xb371
+	case skein1024_144                  = 0xb372
+	case skein1024_152                  = 0xb373
+	case skein1024_160                  = 0xb374
+	case skein1024_168                  = 0xb375
+	case skein1024_176                  = 0xb376
+	case skein1024_184                  = 0xb377
+	case skein1024_192                  = 0xb378
+	case skein1024_200                  = 0xb379
+	case skein1024_208                  = 0xb37a
+	case skein1024_216                  = 0xb37b
+	case skein1024_224                  = 0xb37c
+	case skein1024_232                  = 0xb37d
+	case skein1024_240                  = 0xb37e
+	case skein1024_248                  = 0xb37f
+	case skein1024_256                  = 0xb380
+	case skein1024_264                  = 0xb381
+	case skein1024_272                  = 0xb382
+	case skein1024_280                  = 0xb383
+	case skein1024_288                  = 0xb384
+	case skein1024_296                  = 0xb385
+	case skein1024_304                  = 0xb386
+	case skein1024_312                  = 0xb387
+	case skein1024_320                  = 0xb388
+	case skein1024_328                  = 0xb389
+	case skein1024_336                  = 0xb38a
+	case skein1024_344                  = 0xb38b
+	case skein1024_352                  = 0xb38c
+	case skein1024_360                  = 0xb38d
+	case skein1024_368                  = 0xb38e
+	case skein1024_376                  = 0xb38f
+	case skein1024_384                  = 0xb390
+	case skein1024_392                  = 0xb391
+	case skein1024_400                  = 0xb392
+	case skein1024_408                  = 0xb393
+	case skein1024_416                  = 0xb394
+	case skein1024_424                  = 0xb395
+	case skein1024_432                  = 0xb396
+	case skein1024_440                  = 0xb397
+	case skein1024_448                  = 0xb398
+	case skein1024_456                  = 0xb399
+	case skein1024_464                  = 0xb39a
+	case skein1024_472                  = 0xb39b
+	case skein1024_480                  = 0xb39c
+	case skein1024_488                  = 0xb39d
+	case skein1024_496                  = 0xb39e
+	case skein1024_504                  = 0xb39f
+	case skein1024_512                  = 0xb3a0
+	case skein1024_520                  = 0xb3a1
+	case skein1024_528                  = 0xb3a2
+	case skein1024_536                  = 0xb3a3
+	case skein1024_544                  = 0xb3a4
+	case skein1024_552                  = 0xb3a5
+	case skein1024_560                  = 0xb3a6
+	case skein1024_568                  = 0xb3a7
+	case skein1024_576                  = 0xb3a8
+	case skein1024_584                  = 0xb3a9
+	case skein1024_592                  = 0xb3aa
+	case skein1024_600                  = 0xb3ab
+	case skein1024_608                  = 0xb3ac
+	case skein1024_616                  = 0xb3ad
+	case skein1024_624                  = 0xb3ae
+	case skein1024_632                  = 0xb3af
+	case skein1024_640                  = 0xb3b0
+	case skein1024_648                  = 0xb3b1
+	case skein1024_656                  = 0xb3b2
+	case skein1024_664                  = 0xb3b3
+	case skein1024_672                  = 0xb3b4
+	case skein1024_680                  = 0xb3b5
+	case skein1024_688                  = 0xb3b6
+	case skein1024_696                  = 0xb3b7
+	case skein1024_704                  = 0xb3b8
+	case skein1024_712                  = 0xb3b9
+	case skein1024_720                  = 0xb3ba
+	case skein1024_728                  = 0xb3bb
+	case skein1024_736                  = 0xb3bc
+	case skein1024_744                  = 0xb3bd
+	case skein1024_752                  = 0xb3be
+	case skein1024_760                  = 0xb3bf
+	case skein1024_768                  = 0xb3c0
+	case skein1024_776                  = 0xb3c1
+	case skein1024_784                  = 0xb3c2
+	case skein1024_792                  = 0xb3c3
+	case skein1024_800                  = 0xb3c4
+	case skein1024_808                  = 0xb3c5
+	case skein1024_816                  = 0xb3c6
+	case skein1024_824                  = 0xb3c7
+	case skein1024_832                  = 0xb3c8
+	case skein1024_840                  = 0xb3c9
+	case skein1024_848                  = 0xb3ca
+	case skein1024_856                  = 0xb3cb
+	case skein1024_864                  = 0xb3cc
+	case skein1024_872                  = 0xb3cd
+	case skein1024_880                  = 0xb3ce
+	case skein1024_888                  = 0xb3cf
+	case skein1024_896                  = 0xb3d0
+	case skein1024_904                  = 0xb3d1
+	case skein1024_912                  = 0xb3d2
+	case skein1024_920                  = 0xb3d3
+	case skein1024_928                  = 0xb3d4
+	case skein1024_936                  = 0xb3d5
+	case skein1024_944                  = 0xb3d6
+	case skein1024_952                  = 0xb3d7
+	case skein1024_960                  = 0xb3d8
+	case skein1024_968                  = 0xb3d9
+	case skein1024_976                  = 0xb3da
+	case skein1024_984                  = 0xb3db
+	case skein1024_992                  = 0xb3dc
+	case skein1024_1000                 = 0xb3dd
+	case skein1024_1008                 = 0xb3de
+	case skein1024_1016                 = 0xb3df
+	case skein1024_1024                 = 0xb3e0
+	case poseidon_bls12_381_a2_fc1      = 0xb401
+	case poseidon_bls12_381_a2_fc1_sc   = 0xb402
+	case iscc                           = 0xcc01
+	case zeroxcert_imprint_256          = 0xce11
+	case fil_commitment_unsealed        = 0xf101
+	case fil_commitment_sealed          = 0xf102
+	case plaintextv2                    = 0x706c61
+	case holochain_adr_v0               = 0x807124
+	case holochain_adr_v1               = 0x817124
+	case holochain_key_v0               = 0x947124
+	case holochain_key_v1               = 0x957124
+	case holochain_sig_v0               = 0xa27124
+	case holochain_sig_v1               = 0xa37124
+	case skynet_ns                      = 0xb19910
+	case arweave_ns                     = 0xb29910
+	case subspace_ns                    = 0xb39910
+	case kumandra_ns                    = 0xb49910
     
     //Deprecated Values
     case ipfs
@@ -575,11 +582,11 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	    case .identity:
 		    return "multihash"
 		case .cidv1:
-		    return "ipld"
+		    return "cid"
 		case .cidv2:
-		    return "ipld"
+		    return "cid"
 		case .cidv3:
-		    return "ipld"
+		    return "cid"
 		case .ip4:
 		    return "multiaddr"
 		case .tcp:
@@ -645,7 +652,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		case .protobuf:
 		    return "serialization"
 		case .cbor:
-		    return "serialization"
+		    return "ipld"
 		case .raw:
 		    return "ipld"
 		case .dbl_sha2_256:
@@ -788,7 +795,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "multiaddr"
 		case .thread:
 		    return "multiaddr"
-        case .p2p, .ipfs:
+		case .p2p, .ipfs:
 		    return "multiaddr"
 		case .https:
 		    return "multiaddr"
@@ -806,6 +813,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "multiaddr"
 		case .quic:
 		    return "multiaddr"
+		case .webtransport:
+		    return "multiaddr"
 		case .ws:
 		    return "multiaddr"
 		case .wss:
@@ -817,8 +826,10 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		case .swhid_1_snp:
 		    return "ipld"
 		case .json:
-		    return "serialization"
+		    return "ipld"
 		case .messagepack:
+		    return "serialization"
+		case .car:
 		    return "serialization"
 		case .libp2p_peer_record:
 		    return "libp2p"
@@ -828,6 +839,10 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "serialization"
 		case .car_multihash_index_sorted:
 		    return "serialization"
+		case .transport_bitswap:
+		    return "transport"
+		case .transport_graphsync_filecoinv1:
+		    return "transport"
 		case .sha2_256_trunc254_padded:
 		    return "multihash"
 		case .sha2_224:
@@ -1514,6 +1529,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "multihash"
 		case .poseidon_bls12_381_a2_fc1_sc:
 		    return "multihash"
+		case .iscc:
+		    return "softhash"
 		case .zeroxcert_imprint_256:
 		    return "zeroxcert"
 		case .fil_commitment_unsealed:
@@ -1537,6 +1554,10 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		case .skynet_ns:
 		    return "namespace"
 		case .arweave_ns:
+		    return "namespace"
+		case .subspace_ns:
+		    return "namespace"
+		case .kumandra_ns:
 		    return "namespace"
 	    
 	    }
@@ -1684,7 +1705,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "MerkleDAG json"
 		case .thread:
 		    return "Textile Thread"
-		case .p2p:
+		case .p2p, .ipfs:
 		    return "libp2p"
 		case .garlic64:
 		    return "I2P base64 (raw public key)"
@@ -1696,6 +1717,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "JSON (UTF-8-encoded)"
 		case .messagepack:
 		    return "MessagePack"
+		case .car:
+		    return "Content Addressable aRchive (CAR)"
 		case .libp2p_peer_record:
 		    return "libp2p peer record type"
 		case .libp2p_relay_rsvp:
@@ -1704,6 +1727,10 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "CARv2 IndexSorted index format"
 		case .car_multihash_index_sorted:
 		    return "CARv2 MultihashIndexSorted index format"
+		case .transport_bitswap:
+		    return "Bitswap datatransfer"
+		case .transport_graphsync_filecoinv1:
+		    return "Filecoin graphsync datatransfer"
 		case .sha2_256_trunc254_padded:
 		    return "SHA2-256 with the two most significant bits from the last byte zeroed (as via a mask with 0b00111111) - used for proving trees as in Filecoin"
 		case .sha2_224:
@@ -1746,6 +1773,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "Poseidon using BLS12-381 and arity of 2 with Filecoin parameters"
 		case .poseidon_bls12_381_a2_fc1_sc:
 		    return "Poseidon using BLS12-381 and arity of 2 with Filecoin parameters - high-security variant"
+		case .iscc:
+		    return "ISCC (International Standard Content Code) - similarity preserving hash"
 		case .zeroxcert_imprint_256:
 		    return "0xcert Asset Imprint (root hash)"
 		case .fil_commitment_unsealed:
@@ -1768,6 +1797,10 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "Skynet Namespace"
 		case .arweave_ns:
 		    return "Arweave Namespace"
+		case .subspace_ns:
+		    return "Subspace Network Namespace"
+		case .kumandra_ns:
+		    return "Kumandra Network Namespace"
 	    default: return nil
 	    }
 	}
