@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 /// This script fetches the latest [Multicodec table from the Multiformats repository](https://raw.githubusercontent.com/multiformats/multicodec/master/table.csv)
 /// attempts to parse the data and generate an Enumeration from it.
@@ -378,7 +381,7 @@ guard let codecsURL = URL(string: "Sources/Multicodec/Codecs.swift", relativeTo:
 }
 
 do {
-    try data.write(to: codecsURL, options: [.atomicWrite])
+    try data.write(to: codecsURL)
     print("Updated Codecs Successfully!")
     exit(EXIT_SUCCESS)
 } catch {
