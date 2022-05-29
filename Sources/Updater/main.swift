@@ -29,7 +29,7 @@ let HEADER = """
 //  Codecs.swift
 //
 //
-//  Created by Brandon Toms on 9/14/20.
+//  Created by Brandon Toms on 5/1/22.
 //  Updated on {{+date_updated+}}
 
 import Foundation
