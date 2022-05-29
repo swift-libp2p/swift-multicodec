@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 /// This script fetches the latest [Multicodec table from the Multiformats repository](https://raw.githubusercontent.com/multiformats/multicodec/master/table.csv)
 /// attempts to parse the data and generate an Enumeration from it.
@@ -306,7 +309,11 @@ func generateComputedProperty(_ compProp:ComputedProperty, cases:[EnumCase], sco
     let entries:[String] = cases.compactMap {
         if let val = $0.computedProperties[compProp.caseKey] {
             var entry = COMPUTED_PROPERTY_CASE
-            entry = entry.replacingOccurrences(of: "{{+case_title+}}", with: $0.title)
+            if $0.title == "p2p" {
+                entry = entry.replacingOccurrences(of: "{{+case_title+}}", with: $0.title + ", .ipfs")
+            } else {
+                entry = entry.replacingOccurrences(of: "{{+case_title+}}", with: $0.title)
+            }
             if rawType.lowercased().contains("string") {
                 entry = entry.replacingOccurrences(of: "{{+case_value+}}", with: "\"\(val)\"")
             } else {
@@ -374,7 +381,7 @@ guard let codecsURL = URL(string: "Sources/Multicodec/Codecs.swift", relativeTo:
 }
 
 do {
-    try data.write(to: codecsURL, options: [.atomicWrite])
+    try data.write(to: codecsURL)
     print("Updated Codecs Successfully!")
     exit(EXIT_SUCCESS)
 } catch {
