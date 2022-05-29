@@ -9,7 +9,12 @@ import Foundation
 
 public extension Codecs {
     static func ==(lhs: Codecs, rhs: Codecs) -> Bool {
-        return lhs.rawValue == rhs.rawValue
+        switch (lhs, rhs) {
+        case (.p2p, .ipfs): return true
+        case (.ipfs, .p2p): return true
+        default:
+            return lhs.rawValue == rhs.rawValue
+        }
     }
     
     static func ==(lhs: Codecs, rhs: Int64) -> Bool {
