@@ -3,7 +3,7 @@
 //
 //
 //  Created by Brandon Toms on 5/1/22.
-//  Updated on 5/15/22
+//  Updated on 11/3/22
 
 import Foundation
 import VarInt
@@ -45,6 +45,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case murmur3_32                     = 0x23
 	case ip6                            = 0x29
 	case ip6zone                        = 0x2a
+	case ipcidr                         = 0x2b
 	case path                           = 0x2f
 	case multicodec                     = 0x30
 	case multihash                      = 0x31
@@ -99,15 +100,15 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case stellar_tx                     = 0xd1
 	case md4                            = 0xd4
 	case md5                            = 0xd5
-	case bmt                            = 0xd6
 	case decred_block                   = 0xe0
 	case decred_tx                      = 0xe1
-	case ipld_ns                        = 0xe2
-	case ipfs_ns                        = 0xe3
-	case swarm_ns                       = 0xe4
-	case ipns_ns                        = 0xe5
+	case ipld                           = 0xe2
+	case ipfs                           = 0xe3
+	case swarm                          = 0xe4
+	case ipns                           = 0xe5
 	case zeronet                        = 0xe6
 	case secp256k1_pub                  = 0xe7
+	case dnslink                        = 0xe8
 	case bls12_381_g1_pub               = 0xea
 	case bls12_381_g2_pub               = 0xeb
 	case x25519_pub                     = 0xec
@@ -117,10 +118,12 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case dash_tx                        = 0xf1
 	case swarm_manifest                 = 0xfa
 	case swarm_feed                     = 0xfb
+	case beeson                         = 0xfc
 	case udp                            = 0x0111
 	case p2p_webrtc_star                = 0x0113
 	case p2p_webrtc_direct              = 0x0114
 	case p2p_stardust                   = 0x0115
+	case webrtc                         = 0x0118
 	case p2p_circuit                    = 0x0122
 	case dag_json                       = 0x0129
 	case udt                            = 0x012d
@@ -134,9 +137,11 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case garlic64                       = 0x01be
 	case garlic32                       = 0x01bf
 	case tls                            = 0x01c0
+	case sni                            = 0x01c1
 	case noise                          = 0x01c6
 	case quic                           = 0x01cc
 	case webtransport                   = 0x01d1
+	case certhash                       = 0x01d2
 	case ws                             = 0x01dd
 	case wss                            = 0x01de
 	case p2p_websocket_star             = 0x01df
@@ -147,6 +152,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case car                            = 0x0202
 	case libp2p_peer_record             = 0x0301
 	case libp2p_relay_rsvp              = 0x0302
+	case memorytransport                = 0x0309
 	case car_index_sorted               = 0x0400
 	case car_multihash_index_sorted     = 0x0401
 	case transport_bitswap              = 0x0900
@@ -167,10 +173,13 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case ed448_pub                      = 0x1203
 	case x448_pub                       = 0x1204
 	case rsa_pub                        = 0x1205
+	case sm2_pub                        = 0x1206
 	case ed25519_priv                   = 0x1300
 	case secp256k1_priv                 = 0x1301
 	case x25519_priv                    = 0x1302
+	case rsa_priv                       = 0x1305
 	case kangarootwelve                 = 0x1d01
+	case silverpine                     = 0x3f42
 	case sm3_256                        = 0x534d
 	case blake2b_8                      = 0xb201
 	case blake2b_16                     = 0xb202
@@ -494,8 +503,18 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case skein1024_1024                 = 0xb3e0
 	case poseidon_bls12_381_a2_fc1      = 0xb401
 	case poseidon_bls12_381_a2_fc1_sc   = 0xb402
+	case urdca_2015_canon               = 0xb403
+	case ssz                            = 0xb501
+	case ssz_sha2_256_bmt               = 0xb502
+	case json_jcs                       = 0xb601
 	case iscc                           = 0xcc01
 	case zeroxcert_imprint_256          = 0xce11
+	case varsig                         = 0xd000
+	case es256k                         = 0xd0e7
+	case bls_12381_g1_sig               = 0xd0ea
+	case bls_12381_g2_sig               = 0xd0eb
+	case eddsa                          = 0xd0ed
+	case eip_191                        = 0xd191
 	case fil_commitment_unsealed        = 0xf101
 	case fil_commitment_sealed          = 0xf102
 	case plaintextv2                    = 0x706c61
@@ -509,9 +528,11 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case arweave_ns                     = 0xb29910
 	case subspace_ns                    = 0xb39910
 	case kumandra_ns                    = 0xb49910
+	case es256                          = 0xd01200
+	case es284                          = 0xd01201
+	case es512                          = 0xd01202
+	case rs256                          = 0xd01205
     
-    //Deprecated Values
-    case ipfs
 
     /// Allows instantiation of a Codec based on it's name
     /// ```
@@ -524,7 +545,6 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
     /// - Note: The string name is lowercased and replaces dashes (-) for underscores (_) before checking for a match...
     public init(_ name:String) throws {
         let n = name.replacingOccurrences(of: "-", with: "_").lowercased()
-        //if n == "ipfs" { self = Codecs.p2p; return } //ipfs is deprecated (p2p now) but we support string instantiation...
         guard let match = Codecs.allCases.first(where: { "\($0)" == n }) else { throw MulticodecError.UnknownCodecString }
         self = match
     }
@@ -562,13 +582,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
     
     /// Returns the code for this Codec
     public var code:UInt64 {
-        // Handle Deprecated Values
-        switch self {
-        case .ipfs:
-            return Codecs.p2p.rawValue
-        default:
-            return self.rawValue
-        }
+        return self.rawValue
     }
     
     /// Returns the name for this Codec
@@ -630,6 +644,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		case .ip6:
 		    return "multiaddr"
 		case .ip6zone:
+		    return "multiaddr"
+		case .ipcidr:
 		    return "multiaddr"
 		case .path:
 		    return "namespace"
@@ -739,24 +755,24 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "multihash"
 		case .md5:
 		    return "multihash"
-		case .bmt:
-		    return "multihash"
 		case .decred_block:
 		    return "ipld"
 		case .decred_tx:
 		    return "ipld"
-		case .ipld_ns:
+		case .ipld:
 		    return "namespace"
-		case .ipfs_ns:
+		case .ipfs:
 		    return "namespace"
-		case .swarm_ns:
+		case .swarm:
 		    return "namespace"
-		case .ipns_ns:
+		case .ipns:
 		    return "namespace"
 		case .zeronet:
 		    return "namespace"
 		case .secp256k1_pub:
 		    return "key"
+		case .dnslink:
+		    return "namespace"
 		case .bls12_381_g1_pub:
 		    return "key"
 		case .bls12_381_g2_pub:
@@ -775,6 +791,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "ipld"
 		case .swarm_feed:
 		    return "ipld"
+		case .beeson:
+		    return "ipld"
 		case .udp:
 		    return "multiaddr"
 		case .p2p_webrtc_star:
@@ -782,6 +800,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		case .p2p_webrtc_direct:
 		    return "multiaddr"
 		case .p2p_stardust:
+		    return "multiaddr"
+		case .webrtc:
 		    return "multiaddr"
 		case .p2p_circuit:
 		    return "multiaddr"
@@ -795,7 +815,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "multiaddr"
 		case .thread:
 		    return "multiaddr"
-		case .p2p, .ipfs:
+		case .p2p:
 		    return "multiaddr"
 		case .https:
 		    return "multiaddr"
@@ -809,11 +829,15 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "multiaddr"
 		case .tls:
 		    return "multiaddr"
+		case .sni:
+		    return "multiaddr"
 		case .noise:
 		    return "multiaddr"
 		case .quic:
 		    return "multiaddr"
 		case .webtransport:
+		    return "multiaddr"
+		case .certhash:
 		    return "multiaddr"
 		case .ws:
 		    return "multiaddr"
@@ -834,6 +858,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		case .libp2p_peer_record:
 		    return "libp2p"
 		case .libp2p_relay_rsvp:
+		    return "libp2p"
+		case .memorytransport:
 		    return "libp2p"
 		case .car_index_sorted:
 		    return "serialization"
@@ -875,14 +901,20 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "key"
 		case .rsa_pub:
 		    return "key"
+		case .sm2_pub:
+		    return "key"
 		case .ed25519_priv:
 		    return "key"
 		case .secp256k1_priv:
 		    return "key"
 		case .x25519_priv:
 		    return "key"
+		case .rsa_priv:
+		    return "key"
 		case .kangarootwelve:
 		    return "multihash"
+		case .silverpine:
+		    return "multiaddr"
 		case .sm3_256:
 		    return "multihash"
 		case .blake2b_8:
@@ -1529,10 +1561,30 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "multihash"
 		case .poseidon_bls12_381_a2_fc1_sc:
 		    return "multihash"
+		case .urdca_2015_canon:
+		    return "ipld"
+		case .ssz:
+		    return "serialization"
+		case .ssz_sha2_256_bmt:
+		    return "multihash"
+		case .json_jcs:
+		    return "ipld"
 		case .iscc:
 		    return "softhash"
 		case .zeroxcert_imprint_256:
 		    return "zeroxcert"
+		case .varsig:
+		    return "varsig"
+		case .es256k:
+		    return "varsig"
+		case .bls_12381_g1_sig:
+		    return "varsig"
+		case .bls_12381_g2_sig:
+		    return "varsig"
+		case .eddsa:
+		    return "varsig"
+		case .eip_191:
+		    return "varsig"
 		case .fil_commitment_unsealed:
 		    return "filecoin"
 		case .fil_commitment_sealed:
@@ -1559,6 +1611,14 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "namespace"
 		case .kumandra_ns:
 		    return "namespace"
+		case .es256:
+		    return "varsig"
+		case .es284:
+		    return "varsig"
+		case .es512:
+		    return "varsig"
+		case .rs256:
+		    return "varsig"
 	    
 	    }
 	}
@@ -1581,6 +1641,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "aka SHA-384; as specified by FIPS 180-4."
 		case .murmur3_x64_64:
 		    return "The first 64-bits of a murmur3-x64-128 - used for UnixFS directory sharding."
+		case .ipcidr:
+		    return "CIDR mask for IP addresses"
 		case .path:
 		    return "Namespace for string paths. Corresponds to `/` in ASCII."
 		case .protobuf:
@@ -1665,24 +1727,24 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "Stellar Block"
 		case .stellar_tx:
 		    return "Stellar Tx"
-		case .bmt:
-		    return "Binary Merkle Tree Hash"
 		case .decred_block:
 		    return "Decred Block"
 		case .decred_tx:
 		    return "Decred Tx"
-		case .ipld_ns:
+		case .ipld:
 		    return "IPLD path"
-		case .ipfs_ns:
+		case .ipfs:
 		    return "IPFS path"
-		case .swarm_ns:
+		case .swarm:
 		    return "Swarm path"
-		case .ipns_ns:
+		case .ipns:
 		    return "IPNS path"
 		case .zeronet:
 		    return "ZeroNet site address"
 		case .secp256k1_pub:
 		    return "Secp256k1 public key (compressed)"
+		case .dnslink:
+		    return "DNSLink path"
 		case .bls12_381_g1_pub:
 		    return "BLS12-381 public key in the G1 field"
 		case .bls12_381_g2_pub:
@@ -1701,16 +1763,24 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "Swarm Manifest"
 		case .swarm_feed:
 		    return "Swarm Feed"
+		case .beeson:
+		    return "Swarm BeeSon"
+		case .webrtc:
+		    return "WebRTC"
 		case .dag_json:
 		    return "MerkleDAG json"
 		case .thread:
 		    return "Textile Thread"
-		case .p2p, .ipfs:
+		case .p2p:
 		    return "libp2p"
 		case .garlic64:
 		    return "I2P base64 (raw public key)"
 		case .garlic32:
 		    return "I2P base32 (hashed public key or encoded public key/checksum+optional secret)"
+		case .sni:
+		    return "Server Name Indication RFC 6066 § 3"
+		case .certhash:
+		    return "TLS certificate's fingerprint as a multihash"
 		case .swhid_1_snp:
 		    return "SoftWare Heritage persistent IDentifier version 1 snapshot"
 		case .json:
@@ -1723,6 +1793,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "libp2p peer record type"
 		case .libp2p_relay_rsvp:
 		    return "libp2p relay reservation voucher"
+		case .memorytransport:
+		    return "in memory transport for self-dialing and testing; arbitrary"
 		case .car_index_sorted:
 		    return "CARv2 IndexSorted index format"
 		case .car_multihash_index_sorted:
@@ -1751,14 +1823,20 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "X448 public Key"
 		case .rsa_pub:
 		    return "RSA public key. DER-encoded ASN.1 type RSAPublicKey according to IETF RFC 8017 (PKCS #1)"
+		case .sm2_pub:
+		    return "SM2 public key (compressed)"
 		case .ed25519_priv:
 		    return "Ed25519 private key"
 		case .secp256k1_priv:
 		    return "Secp256k1 private key"
 		case .x25519_priv:
 		    return "Curve25519 private key"
+		case .rsa_priv:
+		    return "RSA private key"
 		case .kangarootwelve:
 		    return "KangarooTwelve is an extendable-output hash function based on Keccak-p"
+		case .silverpine:
+		    return "Experimental QUIC over yggdrasil and ironwood routing protocol"
 		case .blake2b_8:
 		    return "Blake2b consists of 64 output lengths that give different hashes"
 		case .blake2s_8:
@@ -1773,10 +1851,30 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "Poseidon using BLS12-381 and arity of 2 with Filecoin parameters"
 		case .poseidon_bls12_381_a2_fc1_sc:
 		    return "Poseidon using BLS12-381 and arity of 2 with Filecoin parameters - high-security variant"
+		case .urdca_2015_canon:
+		    return "The result of canonicalizing an input according to URDCA-2015 and then expressing its hash value as a multihash value."
+		case .ssz:
+		    return "SimpleSerialize (SSZ) serialization"
+		case .ssz_sha2_256_bmt:
+		    return "SSZ Merkle tree root using SHA2-256 as the hashing function and SSZ serialization for the block binary"
+		case .json_jcs:
+		    return "The result of canonicalizing an input according to JCS - JSON Canonicalisation Scheme (RFC 8785)"
 		case .iscc:
 		    return "ISCC (International Standard Content Code) - similarity preserving hash"
 		case .zeroxcert_imprint_256:
 		    return "0xcert Asset Imprint (root hash)"
+		case .varsig:
+		    return "Namespace for all not yet standard signature algorithms"
+		case .es256k:
+		    return "ES256K Siganture Algorithm (secp256k1)"
+		case .bls_12381_g1_sig:
+		    return "G1 signature for BLS-12381-G2"
+		case .bls_12381_g2_sig:
+		    return "G2 signature for BLS-12381-G1"
+		case .eddsa:
+		    return "Edwards-Curve Digital Signature Algorithm"
+		case .eip_191:
+		    return "EIP-191 Ethereum Signed Data Standard"
 		case .fil_commitment_unsealed:
 		    return "Filecoin piece or sector data commitment merkle node/root (CommP & CommD)"
 		case .fil_commitment_sealed:
@@ -1801,6 +1899,14 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "Subspace Network Namespace"
 		case .kumandra_ns:
 		    return "Kumandra Network Namespace"
+		case .es256:
+		    return "ES256 Signature Algorithm"
+		case .es284:
+		    return "ES384 Signature Algorithm"
+		case .es512:
+		    return "ES512 Signature Algorithm"
+		case .rs256:
+		    return "RS256 Signature Algorithm"
 	    default: return nil
 	    }
 	}
