@@ -75,8 +75,6 @@ case .{{+case_title+}}:
 """
 
 let ENUM_ADDITIONAL_COMPONENTS = """
-    //Deprecated Values
-    case ipfs
 
     /// Allows instantiation of a Codec based on it's name
     /// ```
@@ -89,7 +87,6 @@ let ENUM_ADDITIONAL_COMPONENTS = """
     /// - Note: The string name is lowercased and replaces dashes (-) for underscores (_) before checking for a match...
     {{+enum_scope+}} init(_ name:String) throws {
         let n = name.replacingOccurrences(of: "-", with: "_").lowercased()
-        //if n == "ipfs" { self = Codecs.p2p; return } //ipfs is deprecated (p2p now) but we support string instantiation...
         guard let match = Codecs.allCases.first(where: { "\\($0)" == n }) else { throw MulticodecError.UnknownCodecString }
         self = match
     }
@@ -127,13 +124,7 @@ let ENUM_ADDITIONAL_COMPONENTS = """
     
     /// Returns the code for this Codec
     {{+enum_scope+}} var code:UInt64 {
-        // Handle Deprecated Values
-        switch self {
-        case .ipfs:
-            return Codecs.p2p.rawValue
-        default:
-            return self.rawValue
-        }
+        return self.rawValue
     }
     
     /// Returns the name for this Codec
@@ -309,11 +300,9 @@ func generateComputedProperty(_ compProp:ComputedProperty, cases:[EnumCase], sco
     let entries:[String] = cases.compactMap {
         if let val = $0.computedProperties[compProp.caseKey] {
             var entry = COMPUTED_PROPERTY_CASE
-            if $0.title == "p2p" {
-                entry = entry.replacingOccurrences(of: "{{+case_title+}}", with: $0.title + ", .ipfs")
-            } else {
-                entry = entry.replacingOccurrences(of: "{{+case_title+}}", with: $0.title)
-            }
+            
+            entry = entry.replacingOccurrences(of: "{{+case_title+}}", with: $0.title)
+
             if rawType.lowercased().contains("string") {
                 entry = entry.replacingOccurrences(of: "{{+case_value+}}", with: "\"\(val)\"")
             } else {
