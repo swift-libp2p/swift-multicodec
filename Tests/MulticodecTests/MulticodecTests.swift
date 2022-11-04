@@ -152,17 +152,16 @@ final class MulticodecTests: XCTestCase {
         XCTAssertEqual(try getCodec(bytes: prefixedBuf), Codecs.p2p.name)
     }
     
-
-    /// `ipfs` and `p2p` are assigned to `0x01a5`, `ipfs` is deprecated
-    func testP2PandIPFSOverload() throws {
+    func testP2P() throws {
         XCTAssertEqual(try Codecs(0x01a5).name, "p2p")
     }
-    func testP2PandIPFSStringOverload() throws {
-        let ipfs = try Codecs("ipfs")
-        XCTAssertEqual(ipfs.name, "ipfs")
-        XCTAssertEqual(ipfs.code, 0x01a5)
-        XCTAssertEqual(ipfs.code, Codecs.p2p.code)
-        XCTAssertNotEqual(ipfs.rawValue, Codecs.p2p.rawValue)
+    
+    func testIPFS() throws {
+        XCTAssertEqual(try Codecs(0xe3).name, "ipfs")
+    }
+    
+    func testP2PIPFSEquality() throws {
+        XCTAssertNotEqual(Codecs.ipfs, Codecs.p2p)
     }
 
     // MARK: - Error Handling
@@ -228,8 +227,9 @@ final class MulticodecTests: XCTestCase {
         ("testCodecIntInstantiation", testCodecIntInstantiation),
         ("testCodecNamesDirect", testCodecNamesDirect),
         ("testP2PCodecClassification", testP2PCodecClassification),
-        ("testP2PandIPFSOverload", testP2PandIPFSOverload),
-        ("testP2PandIPFSStringOverload", testP2PandIPFSStringOverload),
+        ("testP2P", testP2P),
+        ("testIPFS", testIPFS),
+        ("testP2PIPFSEquality", testP2PIPFSEquality),
         ("testStringInstantiationWithUnknownCodecName", testStringInstantiationWithUnknownCodecName),
         ("testGetCodecFromBufferWithUnknownCodec", testGetCodecFromBufferWithUnknownCodec),
         ("testPrefixBufferWithUnknownCodec", testPrefixBufferWithUnknownCodec)
