@@ -3,7 +3,7 @@
 //
 //
 //  Created by Brandon Toms on 5/1/22.
-//  Updated on 7/18/23
+//  Updated on 2/8/24
 
 import Foundation
 import VarInt
@@ -74,6 +74,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case sctp                           = 0x84
 	case dag_jose                       = 0x85
 	case dag_cose                       = 0x86
+	case lbry                           = 0x8c
 	case eth_block                      = 0x90
 	case eth_block_list                 = 0x91
 	case eth_tx_trie                    = 0x92
@@ -144,6 +145,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case tls                            = 0x01c0
 	case sni                            = 0x01c1
 	case noise                          = 0x01c6
+	case shs                            = 0x01c8
 	case quic                           = 0x01cc
 	case quic_v1                        = 0x01cd
 	case webtransport                   = 0x01d1
@@ -191,6 +193,9 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case p256_priv                      = 0x1306
 	case p384_priv                      = 0x1307
 	case p521_priv                      = 0x1308
+	case bls12_381_g1_priv              = 0x1309
+	case bls12_381_g2_priv              = 0x130a
+	case bls12_381_g1g2_priv            = 0x130b
 	case kangarootwelve                 = 0x1d01
 	case aes_gcm_256                    = 0x2000
 	case silverpine                     = 0x3f42
@@ -522,7 +527,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case xxh3_128                       = 0xb3e4
 	case poseidon_bls12_381_a2_fc1      = 0xb401
 	case poseidon_bls12_381_a2_fc1_sc   = 0xb402
-	case urdca_2015_canon               = 0xb403
+	case rdfc_1                         = 0xb403
 	case ssz                            = 0xb501
 	case ssz_sha2_256_bmt               = 0xb502
 	case json_jcs                       = 0xb601
@@ -724,6 +729,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "ipld"
 		case .dag_cose:
 		    return "ipld"
+		case .lbry:
+		    return "namespace"
 		case .eth_block:
 		    return "ipld"
 		case .eth_block_list:
@@ -864,6 +871,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "multiaddr"
 		case .noise:
 		    return "multiaddr"
+		case .shs:
+		    return "multiaddr"
 		case .quic:
 		    return "multiaddr"
 		case .quic_v1:
@@ -957,6 +966,12 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		case .p384_priv:
 		    return "key"
 		case .p521_priv:
+		    return "key"
+		case .bls12_381_g1_priv:
+		    return "key"
+		case .bls12_381_g2_priv:
+		    return "key"
+		case .bls12_381_g1g2_priv:
 		    return "key"
 		case .kangarootwelve:
 		    return "multihash"
@@ -1620,7 +1635,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "multihash"
 		case .poseidon_bls12_381_a2_fc1_sc:
 		    return "multihash"
-		case .urdca_2015_canon:
+		case .rdfc_1:
 		    return "ipld"
 		case .ssz:
 		    return "serialization"
@@ -1742,6 +1757,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "MerkleDAG JOSE"
 		case .dag_cose:
 		    return "MerkleDAG COSE"
+		case .lbry:
+		    return "LBRY Address"
 		case .eth_block:
 		    return "Ethereum Header (RLP)"
 		case .eth_block_list:
@@ -1856,6 +1873,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "I2P base32 (hashed public key or encoded public key/checksum+optional secret)"
 		case .sni:
 		    return "Server Name Indication RFC 6066 § 3"
+		case .shs:
+		    return "Secure Scuttlebutt - Secret Handshake Stream"
 		case .certhash:
 		    return "TLS certificate's fingerprint as a multihash"
 		case .swhid_1_snp:
@@ -1924,6 +1943,12 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "P-384 private key"
 		case .p521_priv:
 		    return "P-521 private key"
+		case .bls12_381_g1_priv:
+		    return "BLS12-381 G1 private key"
+		case .bls12_381_g2_priv:
+		    return "BLS12-381 G2 private key"
+		case .bls12_381_g1g2_priv:
+		    return "BLS12-381 G1 and G2 private key"
 		case .kangarootwelve:
 		    return "KangarooTwelve is an extendable-output hash function based on Keccak-p"
 		case .aes_gcm_256:
@@ -1954,8 +1979,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "Poseidon using BLS12-381 and arity of 2 with Filecoin parameters"
 		case .poseidon_bls12_381_a2_fc1_sc:
 		    return "Poseidon using BLS12-381 and arity of 2 with Filecoin parameters - high-security variant"
-		case .urdca_2015_canon:
-		    return "The result of canonicalizing an input according to URDCA-2015 and then expressing its hash value as a multihash value."
+		case .rdfc_1:
+		    return "The result of canonicalizing an input according to RDFC-1.0 and then expressing its hash value as a multihash value."
 		case .ssz:
 		    return "SimpleSerialize (SSZ) serialization"
 		case .ssz_sha2_256_bmt:
