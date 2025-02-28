@@ -8,3 +8,6 @@ jobs:
   tests:
     name: PR
     uses: swift-libp2p/github-workflows/.github/workflows/pull_request.yml@main
+    with:
+      # Allow API breaking changes in Codecs.swift
+      api_breakage_check_allowlist_path: "Codecs.swift"
