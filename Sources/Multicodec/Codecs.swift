@@ -2052,5 +2052,4 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	    default: return nil
 	    }
 	}
-    
 }
