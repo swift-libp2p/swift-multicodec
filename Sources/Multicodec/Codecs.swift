@@ -1,3 +1,4 @@
+// swift-format-ignore-file
 //===----------------------------------------------------------------------===//
 //
 // This source file is part of the swift-libp2p open source project
@@ -18,7 +19,6 @@
 import Foundation
 import VarInt
 
-// swift-format-ignore
 /// An Enum for navigating supported Multiformat Codecs and their properties, most importantly their Name and Integer Code
 ///
 /// - Warning: Do not use the Codecs `rawValue` directly, instead make sure to use the `code` property to ensure backward compatibility with deprecated codecs.
