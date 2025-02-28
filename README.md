@@ -42,7 +42,7 @@ let package = Package(
 
 ### Example
 
-```Swift
+```swift
 
 import Multicodec
 
