@@ -8,3 +8,4 @@ Package.resolved
 .swift-format
 .licenseignore
 .license_header_template
+/Sources/Multicodec/Codecs.swift
