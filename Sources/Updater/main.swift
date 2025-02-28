@@ -289,9 +289,11 @@ func generateEnum(
 
     //Find the largest Key for formatting reasons...
     var largestKey = 0
-    cases.forEach { if $0.title.count > largestKey { largestKey = $0.title.count } }
+    for c in cases {
+        if c.title.count > largestKey { largestKey = c.title.count }
+    }
     largestKey = largestKey + 1
-    
+
     e = e.replacingOccurrences(
         of: "{{+enum_cases+}}",
         with: cases.map { generateCase($0, rawValueOffset: largestKey) }.joined(separator: "\n\t")
@@ -406,7 +408,9 @@ let enumCases: [EnumCase] = entries.compactMap {
         let rv = $0.columns.first(where: { $0.key == "code" })?.value
     {
         let ec = EnumCase(title: name.replacingOccurrences(of: "-", with: "_"), rawValue: rv)
-        $0.columns.forEach { ec.computedProperties[$0.key] = $0.value }
+        for col in $0.columns {
+            ec.computedProperties[col.key] = col.value
+        }
         return ec
     }
     return nil
