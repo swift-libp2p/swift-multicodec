@@ -45,7 +45,7 @@ let HEADER = """
     // SPDX-License-Identifier: MIT
     //
     //===----------------------------------------------------------------------===//
-    // 
+    //
     // This file was generated automatically (do NOT modify this file)
     // Updated on {{+date_updated+}}
 
