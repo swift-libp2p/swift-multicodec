@@ -8,3 +8,8 @@ jobs:
   tests:
     name: PR
     uses: swift-libp2p/github-workflows/.github/workflows/pull_request.yml@main
+    with:
+      # Allow API breaking changes in Codeds.swift 
+      api_breakage_check_allowlist_path: "Sources/Multicodec/Codecs.swift"
+      # Custom acceptable wordlist due to links back to multicodec repo containing 'master'
+      unacceptable_language_check_word_list: "blacklist whitelist slave sane sanity insane insanity kill killed killing hang hung hanged hanging"
