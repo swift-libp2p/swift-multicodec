@@ -13,7 +13,7 @@
 //===----------------------------------------------------------------------===//
 //
 // This file was generated automatically (do NOT modify this file)
-// Updated on 2/8/24
+// Updated on 2/28/25
 
 import Foundation
 import VarInt
@@ -79,6 +79,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case git_raw                        = 0x78
 	case torrent_info                   = 0x7b
 	case torrent_file                   = 0x7c
+	case blake3_hashseq                 = 0x80
 	case leofcoin_block                 = 0x81
 	case leofcoin_tx                    = 0x82
 	case leofcoin_pr                    = 0x83
@@ -165,6 +166,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case wss                            = 0x01de
 	case p2p_websocket_star             = 0x01df
 	case http                           = 0x01e0
+	case http_path                      = 0x01e1
 	case swhid_1_snp                    = 0x01f0
 	case json                           = 0x0200
 	case messagepack                    = 0x0201
@@ -196,6 +198,16 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case x448_pub                       = 0x1204
 	case rsa_pub                        = 0x1205
 	case sm2_pub                        = 0x1206
+	case vlad                           = 0x1207
+	case provenance_log                 = 0x1208
+	case provenance_log_entry           = 0x1209
+	case provenance_log_script          = 0x120a
+	case mlkem_512_pub                  = 0x120b
+	case mlkem_768_pub                  = 0x120c
+	case mlkem_1024_pub                 = 0x120d
+	case multisig                       = 0x1239
+	case multikey                       = 0x123a
+	case nonce                          = 0x123b
 	case ed25519_priv                   = 0x1300
 	case secp256k1_priv                 = 0x1301
 	case x25519_priv                    = 0x1302
@@ -207,11 +219,32 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case bls12_381_g1_priv              = 0x1309
 	case bls12_381_g2_priv              = 0x130a
 	case bls12_381_g1g2_priv            = 0x130b
+	case bls12_381_g1_pub_share         = 0x130c
+	case bls12_381_g2_pub_share         = 0x130d
+	case bls12_381_g1_priv_share        = 0x130e
+	case bls12_381_g2_priv_share        = 0x130f
+	case sm2_priv                       = 0x1310
+	case lamport_sha3_512_pub           = 0x1a14
+	case lamport_sha3_384_pub           = 0x1a15
+	case lamport_sha3_256_pub           = 0x1a16
+	case lamport_sha3_512_priv          = 0x1a24
+	case lamport_sha3_384_priv          = 0x1a25
+	case lamport_sha3_256_priv          = 0x1a26
+	case lamport_sha3_512_priv_share    = 0x1a34
+	case lamport_sha3_384_priv_share    = 0x1a35
+	case lamport_sha3_256_priv_share    = 0x1a36
+	case lamport_sha3_512_sig           = 0x1a44
+	case lamport_sha3_384_sig           = 0x1a45
+	case lamport_sha3_256_sig           = 0x1a46
+	case lamport_sha3_512_sig_share     = 0x1a54
+	case lamport_sha3_384_sig_share     = 0x1a55
+	case lamport_sha3_256_sig_share     = 0x1a56
 	case kangarootwelve                 = 0x1d01
 	case aes_gcm_256                    = 0x2000
 	case silverpine                     = 0x3f42
 	case sm3_256                        = 0x534d
 	case sha256a                        = 0x7012
+	case chacha20_poly1305              = 0xa000
 	case blake2b_8                      = 0xb201
 	case blake2b_16                     = 0xb202
 	case blake2b_24                     = 0xb203
@@ -541,18 +574,25 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case rdfc_1                         = 0xb403
 	case ssz                            = 0xb501
 	case ssz_sha2_256_bmt               = 0xb502
+	case sha2_256_chunked               = 0xb510
 	case json_jcs                       = 0xb601
 	case iscc                           = 0xcc01
 	case zeroxcert_imprint_256          = 0xce11
 	case nonstandard_sig                = 0xd000
+	case bcrypt_pbkdf                   = 0xd00d
 	case es256k                         = 0xd0e7
-	case bls_12381_g1_sig               = 0xd0ea
-	case bls_12381_g2_sig               = 0xd0eb
+	case bls12_381_g1_sig               = 0xd0ea
+	case bls12_381_g2_sig               = 0xd0eb
 	case eddsa                          = 0xd0ed
 	case eip_191                        = 0xd191
 	case jwk_jcs_pub                    = 0xeb51
 	case fil_commitment_unsealed        = 0xf101
 	case fil_commitment_sealed          = 0xf102
+	case shelter_contract_manifest      = 0x511e00
+	case shelter_contract_text          = 0x511e01
+	case shelter_contract_data          = 0x511e02
+	case shelter_file_manifest          = 0x511e03
+	case shelter_file_chunk             = 0x511e04
 	case plaintextv2                    = 0x706c61
 	case holochain_adr_v0               = 0x807124
 	case holochain_adr_v1               = 0x817124
@@ -568,8 +608,20 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case es284                          = 0xd01201
 	case es512                          = 0xd01202
 	case rs256                          = 0xd01205
+	case es256k_msig                    = 0xd01300
+	case bls12_381_g1_msig              = 0xd01301
+	case bls12_381_g2_msig              = 0xd01302
+	case eddsa_msig                     = 0xd01303
+	case bls12_381_g1_share_msig        = 0xd01304
+	case bls12_381_g2_share_msig        = 0xd01305
+	case lamport_msig                   = 0xd01306
+	case lamport_share_msig             = 0xd01307
+	case es256_msig                     = 0xd01308
+	case es384_msig                     = 0xd01309
+	case es521_msig                     = 0xd0130a
+	case rs256_msig                     = 0xd0130b
 	case scion                          = 0xd02000
-
+    
 
     /// Allows instantiation of a Codec based on it's name
     /// ```
@@ -592,17 +644,17 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
             self = s
         } else { throw MulticodecError.UnknownCodecId }
     }
-
+    
     public init(_ code:Int) throws {
         guard let s = Codecs(rawValue: UInt64(code)) else { throw MulticodecError.UnknownCodecId }
         self = s
     }
-
+    
     public init(_ code:Int64) throws {
         guard let s = Codecs(rawValue: UInt64(code)) else { throw MulticodecError.UnknownCodecId }
         self = s
     }
-
+    
     public init(_ code:UInt64) throws {
         guard let s = Codecs(rawValue: code) else { throw MulticodecError.UnknownCodecId }
         self = s
@@ -616,18 +668,18 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 
     /// Returns a list of all known Codec codes
     public static var codecCodes:[UInt64] { return Codecs.allCases.map { $0.rawValue } }
-
+    
     /// Returns the code for this Codec
     public var code:UInt64 {
         return self.rawValue
     }
-
+    
     /// Returns the name for this Codec
     public var name:String { return "\(self)".replacingOccurrences(of: "_", with: "-") }
-
+    
     /// Returns the code for this Codec as a VarInt Byte Buffer
     public var asVarInt:[UInt8] { return putUVarInt(self.rawValue) }
-
+    
 	public var tag:String {
 	    switch self {
 	    case .identity:
@@ -727,6 +779,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		case .torrent_info:
 		    return "ipld"
 		case .torrent_file:
+		    return "ipld"
+		case .blake3_hashseq:
 		    return "ipld"
 		case .leofcoin_block:
 		    return "ipld"
@@ -900,6 +954,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "multiaddr"
 		case .http:
 		    return "multiaddr"
+		case .http_path:
+		    return "multiaddr"
 		case .swhid_1_snp:
 		    return "ipld"
 		case .json:
@@ -962,6 +1018,26 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "key"
 		case .sm2_pub:
 		    return "key"
+		case .vlad:
+		    return "vlad"
+		case .provenance_log:
+		    return "serialization"
+		case .provenance_log_entry:
+		    return "serialization"
+		case .provenance_log_script:
+		    return "serialization"
+		case .mlkem_512_pub:
+		    return "key"
+		case .mlkem_768_pub:
+		    return "key"
+		case .mlkem_1024_pub:
+		    return "key"
+		case .multisig:
+		    return "multiformat"
+		case .multikey:
+		    return "multiformat"
+		case .nonce:
+		    return "nonce"
 		case .ed25519_priv:
 		    return "key"
 		case .secp256k1_priv:
@@ -984,6 +1060,46 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "key"
 		case .bls12_381_g1g2_priv:
 		    return "key"
+		case .bls12_381_g1_pub_share:
+		    return "key"
+		case .bls12_381_g2_pub_share:
+		    return "key"
+		case .bls12_381_g1_priv_share:
+		    return "key"
+		case .bls12_381_g2_priv_share:
+		    return "key"
+		case .sm2_priv:
+		    return "key"
+		case .lamport_sha3_512_pub:
+		    return "key"
+		case .lamport_sha3_384_pub:
+		    return "key"
+		case .lamport_sha3_256_pub:
+		    return "key"
+		case .lamport_sha3_512_priv:
+		    return "key"
+		case .lamport_sha3_384_priv:
+		    return "key"
+		case .lamport_sha3_256_priv:
+		    return "key"
+		case .lamport_sha3_512_priv_share:
+		    return "key"
+		case .lamport_sha3_384_priv_share:
+		    return "key"
+		case .lamport_sha3_256_priv_share:
+		    return "key"
+		case .lamport_sha3_512_sig:
+		    return "multisig"
+		case .lamport_sha3_384_sig:
+		    return "multisig"
+		case .lamport_sha3_256_sig:
+		    return "multisig"
+		case .lamport_sha3_512_sig_share:
+		    return "multisig"
+		case .lamport_sha3_384_sig_share:
+		    return "multisig"
+		case .lamport_sha3_256_sig_share:
+		    return "multisig"
 		case .kangarootwelve:
 		    return "multihash"
 		case .aes_gcm_256:
@@ -994,6 +1110,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "multihash"
 		case .sha256a:
 		    return "hash"
+		case .chacha20_poly1305:
+		    return "multikey"
 		case .blake2b_8:
 		    return "multihash"
 		case .blake2b_16:
@@ -1652,6 +1770,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "serialization"
 		case .ssz_sha2_256_bmt:
 		    return "multihash"
+		case .sha2_256_chunked:
+		    return "multihash"
 		case .json_jcs:
 		    return "ipld"
 		case .iscc:
@@ -1660,11 +1780,13 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "zeroxcert"
 		case .nonstandard_sig:
 		    return "varsig"
+		case .bcrypt_pbkdf:
+		    return "multihash"
 		case .es256k:
 		    return "varsig"
-		case .bls_12381_g1_sig:
+		case .bls12_381_g1_sig:
 		    return "varsig"
-		case .bls_12381_g2_sig:
+		case .bls12_381_g2_sig:
 		    return "varsig"
 		case .eddsa:
 		    return "varsig"
@@ -1676,6 +1798,16 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "filecoin"
 		case .fil_commitment_sealed:
 		    return "filecoin"
+		case .shelter_contract_manifest:
+		    return "shelter"
+		case .shelter_contract_text:
+		    return "shelter"
+		case .shelter_contract_data:
+		    return "shelter"
+		case .shelter_file_manifest:
+		    return "shelter"
+		case .shelter_file_chunk:
+		    return "shelter"
 		case .plaintextv2:
 		    return "multiaddr"
 		case .holochain_adr_v0:
@@ -1706,9 +1838,33 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "varsig"
 		case .rs256:
 		    return "varsig"
+		case .es256k_msig:
+		    return "multisig"
+		case .bls12_381_g1_msig:
+		    return "multisig"
+		case .bls12_381_g2_msig:
+		    return "multisig"
+		case .eddsa_msig:
+		    return "multisig"
+		case .bls12_381_g1_share_msig:
+		    return "multisig"
+		case .bls12_381_g2_share_msig:
+		    return "multisig"
+		case .lamport_msig:
+		    return "multisig"
+		case .lamport_share_msig:
+		    return "multisig"
+		case .es256_msig:
+		    return "multisig"
+		case .es384_msig:
+		    return "multisig"
+		case .es521_msig:
+		    return "multisig"
+		case .rs256_msig:
+		    return "multisig"
 		case .scion:
 		    return "multiaddr"
-	
+	    
 	    }
 	}
 
@@ -1758,6 +1914,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "Torrent file info field (bencoded)"
 		case .torrent_file:
 		    return "Torrent file (bencoded)"
+		case .blake3_hashseq:
+		    return "BLAKE3 hash sequence - per Iroh collections spec"
 		case .leofcoin_block:
 		    return "Leofcoin Block"
 		case .leofcoin_tx:
@@ -1813,9 +1971,9 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		case .zcash_tx:
 		    return "Zcash Tx"
 		case .caip_50:
-		    return "CAIP-50 multi-chain account id"
+		    return "CAIP-50 multi-chain account ID"
 		case .streamid:
-		    return "Ceramic Stream Id"
+		    return "Ceramic Stream ID"
 		case .stellar_block:
 		    return "Stellar Block"
 		case .stellar_tx:
@@ -1888,6 +2046,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "Secure Scuttlebutt - Secret Handshake Stream"
 		case .certhash:
 		    return "TLS certificate's fingerprint as a multihash"
+		case .http_path:
+		    return "Percent-encoded path to an HTTP resource"
 		case .swhid_1_snp:
 		    return "SoftWare Heritage persistent IDentifier version 1 snapshot"
 		case .json:
@@ -1938,6 +2098,26 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "RSA public key. DER-encoded ASN.1 type RSAPublicKey according to IETF RFC 8017 (PKCS #1)"
 		case .sm2_pub:
 		    return "SM2 public key (compressed)"
+		case .vlad:
+		    return "Verifiable Long-lived ADdress"
+		case .provenance_log:
+		    return "Verifiable and permissioned append-only log"
+		case .provenance_log_entry:
+		    return "Verifiable and permissioned append-only log entry"
+		case .provenance_log_script:
+		    return "Verifiable and permissioned append-only log script"
+		case .mlkem_512_pub:
+		    return "ML-KEM 512 public key; as specified by FIPS 203"
+		case .mlkem_768_pub:
+		    return "ML-KEM 768 public key; as specified by FIPS 203"
+		case .mlkem_1024_pub:
+		    return "ML-KEM 1024 public key; as specified by FIPS 203"
+		case .multisig:
+		    return "Digital signature multiformat"
+		case .multikey:
+		    return "Encryption key multiformat"
+		case .nonce:
+		    return "Nonce random value"
 		case .ed25519_priv:
 		    return "Ed25519 private key"
 		case .secp256k1_priv:
@@ -1960,6 +2140,46 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "BLS12-381 G2 private key"
 		case .bls12_381_g1g2_priv:
 		    return "BLS12-381 G1 and G2 private key"
+		case .bls12_381_g1_pub_share:
+		    return "BLS12-381 G1 public key share"
+		case .bls12_381_g2_pub_share:
+		    return "BLS12-381 G2 public key share"
+		case .bls12_381_g1_priv_share:
+		    return "BLS12-381 G1 private key share"
+		case .bls12_381_g2_priv_share:
+		    return "BLS12-381 G2 private key share"
+		case .sm2_priv:
+		    return "SM2 private key"
+		case .lamport_sha3_512_pub:
+		    return "Lamport public key based on SHA3-512"
+		case .lamport_sha3_384_pub:
+		    return "Lamport public key based on SHA3-384"
+		case .lamport_sha3_256_pub:
+		    return "Lamport public key based on SHA3-256"
+		case .lamport_sha3_512_priv:
+		    return "Lamport private key based on SHA3-512"
+		case .lamport_sha3_384_priv:
+		    return "Lamport private key based on SHA3-384"
+		case .lamport_sha3_256_priv:
+		    return "Lamport private key based on SHA3-256"
+		case .lamport_sha3_512_priv_share:
+		    return "Lamport private key share based on SHA3-512 and split with Shamir gf256"
+		case .lamport_sha3_384_priv_share:
+		    return "Lamport private key share based on SHA3-384 and split with Shamir gf256"
+		case .lamport_sha3_256_priv_share:
+		    return "Lamport private key share based on SHA3-256 and split with Shamir gf256"
+		case .lamport_sha3_512_sig:
+		    return "Lamport signature based on SHA3-512"
+		case .lamport_sha3_384_sig:
+		    return "Lamport signature based on SHA3-384"
+		case .lamport_sha3_256_sig:
+		    return "Lamport signature based on SHA3-256"
+		case .lamport_sha3_512_sig_share:
+		    return "Lamport signature share based on SHA3-512 and split with Shamir gf256"
+		case .lamport_sha3_384_sig_share:
+		    return "Lamport signature share based on SHA3-384 and split with Shamir gf256"
+		case .lamport_sha3_256_sig_share:
+		    return "Lamport signature share based on SHA3-256 and split with Shamir gf256"
 		case .kangarootwelve:
 		    return "KangarooTwelve is an extendable-output hash function based on Keccak-p"
 		case .aes_gcm_256:
@@ -1968,6 +2188,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "Experimental QUIC over yggdrasil and ironwood routing protocol"
 		case .sha256a:
 		    return "The sum of multiple sha2-256 hashes; as specified by Ceramic CIP-124."
+		case .chacha20_poly1305:
+		    return "ChaCha20_Poly1305 encryption scheme"
 		case .blake2b_8:
 		    return "Blake2b consists of 64 output lengths that give different hashes"
 		case .blake2s_8:
@@ -1996,6 +2218,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "SimpleSerialize (SSZ) serialization"
 		case .ssz_sha2_256_bmt:
 		    return "SSZ Merkle tree root using SHA2-256 as the hashing function and SSZ serialization for the block binary"
+		case .sha2_256_chunked:
+		    return "Hash of concatenated SHA2-256 digests of 8*2^n MiB source chunks; n = ceil(log2(source_size/(10^4 * 8MiB)))"
 		case .json_jcs:
 		    return "The result of canonicalizing an input according to JCS - JSON Canonicalisation Scheme (RFC 8785)"
 		case .iscc:
@@ -2004,12 +2228,14 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "0xcert Asset Imprint (root hash)"
 		case .nonstandard_sig:
 		    return "Namespace for all not yet standard signature algorithms"
+		case .bcrypt_pbkdf:
+		    return "Bcrypt-PBKDF key derivation function"
 		case .es256k:
-		    return "ES256K Siganture Algorithm (secp256k1)"
-		case .bls_12381_g1_sig:
-		    return "G1 signature for BLS-12381-G2"
-		case .bls_12381_g2_sig:
-		    return "G2 signature for BLS-12381-G1"
+		    return "ES256K Signature Algorithm (secp256k1)"
+		case .bls12_381_g1_sig:
+		    return "G1 signature for BLS12-381"
+		case .bls12_381_g2_sig:
+		    return "G2 signature for BLS12-381"
 		case .eddsa:
 		    return "Edwards-Curve Digital Signature Algorithm"
 		case .eip_191:
@@ -2020,6 +2246,16 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "Filecoin piece or sector data commitment merkle node/root (CommP & CommD)"
 		case .fil_commitment_sealed:
 		    return "Filecoin sector data commitment merkle node/root - sealed and replicated (CommR)"
+		case .shelter_contract_manifest:
+		    return "Shelter protocol contract manifest"
+		case .shelter_contract_text:
+		    return "Shelter protocol contract text"
+		case .shelter_contract_data:
+		    return "Shelter protocol contract data (contract chain)"
+		case .shelter_file_manifest:
+		    return "Shelter protocol file manifest"
+		case .shelter_file_chunk:
+		    return "Shelter protocol file chunk"
 		case .holochain_adr_v0:
 		    return "Holochain v0 address    + 8 R-S (63 x Base-32)"
 		case .holochain_adr_v1:
@@ -2048,9 +2284,34 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "ES512 Signature Algorithm"
 		case .rs256:
 		    return "RS256 Signature Algorithm"
+		case .es256k_msig:
+		    return "ES256K (secp256k1) Signature as Multisig"
+		case .bls12_381_g1_msig:
+		    return "G1 signature for BLS-12381-G2 as Multisig"
+		case .bls12_381_g2_msig:
+		    return "G2 signature for BLS-12381-G1 as Multisig"
+		case .eddsa_msig:
+		    return "Edwards-Curve Digital Signature as Multisig"
+		case .bls12_381_g1_share_msig:
+		    return "G1 threshold signature share for BLS-12381-G2 as Multisig"
+		case .bls12_381_g2_share_msig:
+		    return "G2 threshold signature share for BLS-12381-G1 as Multisig"
+		case .lamport_msig:
+		    return "Lamport signature as Multisig"
+		case .lamport_share_msig:
+		    return "Lamport threshold signature share as Multisig"
+		case .es256_msig:
+		    return "ECDSA P-256 Signature as Multisig"
+		case .es384_msig:
+		    return "ECDSA P-384 Signature as Multisig"
+		case .es521_msig:
+		    return "ECDSA P-521 Signature as Multisig"
+		case .rs256_msig:
+		    return "RS256 Signature as Multisig"
 		case .scion:
 		    return "SCION Internet architecture"
 	    default: return nil
 	    }
 	}
+    
 }
