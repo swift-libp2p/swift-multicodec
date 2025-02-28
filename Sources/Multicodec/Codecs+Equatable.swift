@@ -14,24 +14,24 @@
 
 import Foundation
 
-public extension Codecs {
-    static func ==(lhs: Codecs, rhs: Codecs) -> Bool {
-        return lhs.rawValue == rhs.rawValue
-    }
-    
-    static func ==(lhs: Codecs, rhs: Int64) -> Bool {
-        return lhs.rawValue == rhs
+extension Codecs {
+    public static func == (lhs: Codecs, rhs: Codecs) -> Bool {
+        lhs.rawValue == rhs.rawValue
     }
 
-    static func ==(lhs: Codecs, rhs: Int) -> Bool {
-        return lhs.rawValue == Int64(rhs)
+    public static func == (lhs: Codecs, rhs: Int64) -> Bool {
+        lhs.rawValue == rhs
     }
 
-    static func ==(lhs: Codecs, rhs: String) -> Bool {
-        return lhs.name == rhs
+    public static func == (lhs: Codecs, rhs: Int) -> Bool {
+        lhs.rawValue == Int64(rhs)
     }
-    
-    func isEqual(object: AnyObject?) -> Bool {
+
+    public static func == (lhs: Codecs, rhs: String) -> Bool {
+        lhs.name == rhs
+    }
+
+    public func isEqual(object: AnyObject?) -> Bool {
         if let obj = object as? Codecs {
             return self.rawValue == obj.rawValue
         } else if let obj = object as? Int64 {
@@ -64,4 +64,3 @@ public extension Codecs {
 //        return lhs.rawValue == rhs
 //    }
 //}
-

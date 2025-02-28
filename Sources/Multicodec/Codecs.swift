@@ -18,6 +18,7 @@
 import Foundation
 import VarInt
 
+// swift-format-ignore
 /// An Enum for navigating supported Multiformat Codecs and their properties, most importantly their Name and Integer Code
 ///
 /// - Warning: Do not use the Codecs `rawValue` directly, instead make sure to use the `code` property to ensure backward compatibility with deprecated codecs.
@@ -568,7 +569,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 	case es512                          = 0xd01202
 	case rs256                          = 0xd01205
 	case scion                          = 0xd02000
-    
+
 
     /// Allows instantiation of a Codec based on it's name
     /// ```
@@ -591,17 +592,17 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
             self = s
         } else { throw MulticodecError.UnknownCodecId }
     }
-    
+
     public init(_ code:Int) throws {
         guard let s = Codecs(rawValue: UInt64(code)) else { throw MulticodecError.UnknownCodecId }
         self = s
     }
-    
+
     public init(_ code:Int64) throws {
         guard let s = Codecs(rawValue: UInt64(code)) else { throw MulticodecError.UnknownCodecId }
         self = s
     }
-    
+
     public init(_ code:UInt64) throws {
         guard let s = Codecs(rawValue: code) else { throw MulticodecError.UnknownCodecId }
         self = s
@@ -615,18 +616,18 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 
     /// Returns a list of all known Codec codes
     public static var codecCodes:[UInt64] { return Codecs.allCases.map { $0.rawValue } }
-    
+
     /// Returns the code for this Codec
     public var code:UInt64 {
         return self.rawValue
     }
-    
+
     /// Returns the name for this Codec
     public var name:String { return "\(self)".replacingOccurrences(of: "_", with: "-") }
-    
+
     /// Returns the code for this Codec as a VarInt Byte Buffer
     public var asVarInt:[UInt8] { return putUVarInt(self.rawValue) }
-    
+
 	public var tag:String {
 	    switch self {
 	    case .identity:
@@ -1707,7 +1708,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable {
 		    return "varsig"
 		case .scion:
 		    return "multiaddr"
-	    
+	
 	    }
 	}
 
