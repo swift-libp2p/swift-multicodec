@@ -221,31 +221,4 @@ final class MulticodecTests: XCTestCase {
             }
         }
     }
-
-
-    static var allTests = [
-        ("testCodecsStringInstantiation", testCodecsStringInstantiation),
-        ("testEncodeDecodeBuffer", testEncodeDecodeBuffer),
-        ("testEncodeDecodeBuffer1", testEncodeDecodeBuffer1),
-        ("testEncodeDecodeBuffer2", testEncodeDecodeBuffer2),
-        ("testEncodeDecodeBuffer3", testEncodeDecodeBuffer3),
-        ("testEncodeDecodeBufferAllCasesViaString", testEncodeDecodeBufferAllCasesViaString),
-        ("testEncodeDecodeBufferAllCasesViaCodec", testEncodeDecodeBufferAllCasesViaCodec),
-        ("testEncodeDecodeBufferAllCasesViaInt", testEncodeDecodeBufferAllCasesViaInt),
-        ("testVarIntRoundTrip", testVarIntRoundTrip),
-        ("testEnumCodecsIntInstantiationPerformance", testEnumCodecsIntInstantiationPerformance),
-        //("testDictionaryCodecsIntInstantiationPerformance", testDictionaryCodecsIntInstantiationPerformance),
-        ("testEnumCodecsStringInstantiationPerformance", testEnumCodecsStringInstantiationPerformance),
-        //("testDictionaryCodecsStringInstantiationPerformance", testDictionaryCodecsStringInstantiationPerformance),
-        ("testCodecRawValueDirect", testCodecRawValueDirect),
-        ("testCodecIntInstantiation", testCodecIntInstantiation),
-        ("testCodecNamesDirect", testCodecNamesDirect),
-        ("testP2PCodecClassification", testP2PCodecClassification),
-        ("testP2P", testP2P),
-        ("testIPFS", testIPFS),
-        ("testP2PIPFSEquality", testP2PIPFSEquality),
-        ("testStringInstantiationWithUnknownCodecName", testStringInstantiationWithUnknownCodecName),
-        ("testGetCodecFromBufferWithUnknownCodec", testGetCodecFromBufferWithUnknownCodec),
-        ("testPrefixBufferWithUnknownCodec", testPrefixBufferWithUnknownCodec)
-    ]
 }
