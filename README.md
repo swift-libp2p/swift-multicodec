@@ -38,7 +38,6 @@ let package = Package(
 )
 ```
 
-
 ## Usage
 
 ### Example
