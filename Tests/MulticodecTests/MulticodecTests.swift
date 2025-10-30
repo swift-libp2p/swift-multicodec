@@ -186,14 +186,6 @@ struct MulticodecTests {
         #expect(throws: MulticodecError.UnknownCodecString) {
             try Codecs("this-codec-doesnt-exist")
         }
-        //        XCTAssertThrowsError(try Codecs("this-codec-doesnt-exist"), "hi") { (error) in
-        //            switch error {
-        //            case MulticodecError.UnknownCodecString:
-        //                print(error)
-        //            default:
-        //                XCTFail("Wrong Error Message Thrown...")
-        //            }
-        //        }
     }
 
     @Test func testGetCodecFromBufferWithUnknownCodec() throws {
@@ -207,14 +199,6 @@ struct MulticodecTests {
         #expect(throws: MulticodecError.UnknownCodecId) {
             try getCodec(bytes: prefixedBuf)
         }
-        //        XCTAssertThrowsError(try getCodec(bytes: prefixedBuf), "Unknown Codec Id") { (error) in
-        //            switch error {
-        //            case MulticodecError.UnknownCodecId:
-        //                print(error)
-        //            default:
-        //                XCTFail("Wrong Error Message Thrown...")
-        //            }
-        //        }
     }
 
     @Test func testPrefixBufferWithUnknownCodec() throws {
@@ -222,13 +206,5 @@ struct MulticodecTests {
         #expect(throws: MulticodecError.UnknownCodecId) {
             try addPrefix(code: 0xffee, bytes: buf)
         }
-        //        XCTAssertThrowsError(try addPrefix(code: 0xffee, bytes: buf), "Unknown Codec Id") { (error) in
-        //            switch error {
-        //            case MulticodecError.UnknownCodecId:
-        //                print(error)
-        //            default:
-        //                XCTFail("Wrong Error Message Thrown...")
-        //            }
-        //        }
     }
 }
