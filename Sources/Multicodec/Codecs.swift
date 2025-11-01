@@ -14,7 +14,7 @@
 //===----------------------------------------------------------------------===//
 //
 // This file was generated automatically (do NOT modify this file)
-// Updated on 10/27/25
+// Updated on 11/1/25
 
 import Foundation
 import VarInt
@@ -29,7 +29,7 @@ import VarInt
 /// ```
 /// swift run update-codecs
 /// ```
-public enum Codecs:UInt64, CaseIterable, Equatable {
+public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
     case identity                        = 0x00
 	case cidv1                           = 0x01
 	case cidv2                           = 0x02

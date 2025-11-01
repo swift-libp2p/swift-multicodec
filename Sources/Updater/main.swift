@@ -442,7 +442,7 @@ guard
         scope: .PUBLIC,
         title: "Codecs",
         rawType: UInt64.self,
-        protocolConformances: ["CaseIterable", "Equatable"],
+        protocolConformances: ["CaseIterable", "Equatable", "Sendable"],
         cases: enumCases,
         computedProps: [compPropTag, compPropDes]
     )
