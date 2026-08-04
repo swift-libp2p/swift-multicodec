@@ -37,7 +37,7 @@ struct MulticodecTests {
         #expect(Codecs.blake2b_8 == 0xb201)
     }
 
-    func testCodecNamesDirect() throws {
+    @Test func testCodecNamesDirect() throws {
         //Access a Codecs name via the name property
         #expect(Codecs.eth_block.name == "eth-block")
         #expect(Codecs.dag_pb.name == "dag-pb")
@@ -206,5 +206,26 @@ struct MulticodecTests {
         #expect(throws: MulticodecError.UnknownCodecId) {
             try addPrefix(code: 0xffee, bytes: buf)
         }
+    }
+
+    /// An empty buffer decodes to (0, 0) at the varint layer; ensure it throws
+    /// instead of silently resolving to the `identity` (0x00) codec.
+    @Test func testCodecFromEmptyBytesThrows() throws {
+        #expect(throws: MulticodecError.UnknownCodecId) {
+            try Codecs([UInt8]())
+        }
+    }
+
+    /// A truncated varint (a lone continuation byte) also decodes to (0, 0);
+    /// ensure it throws rather than resolving to `identity`.
+    @Test func testCodecFromTruncatedVarIntThrows() throws {
+        #expect(throws: MulticodecError.UnknownCodecId) {
+            try Codecs([0x80] as [UInt8])
+        }
+    }
+
+    /// A valid single-byte `identity` prefix (0x00) must still decode successfully.
+    @Test func testCodecFromIdentityBytesSucceeds() throws {
+        #expect(try Codecs([0x00] as [UInt8]) == Codecs.identity)
     }
 }
