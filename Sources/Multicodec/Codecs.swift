@@ -14,7 +14,7 @@
 //===----------------------------------------------------------------------===//
 //
 // This file was generated automatically (do NOT modify this file)
-// Updated on 11/1/25
+// Updated on 8/4/26
 
 import Foundation
 import VarInt
@@ -209,6 +209,21 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 	case mlkem_512_pub                   = 0x120b
 	case mlkem_768_pub                   = 0x120c
 	case mlkem_1024_pub                  = 0x120d
+	case mldsa_44_pub                    = 0x1210
+	case mldsa_65_pub                    = 0x1211
+	case mldsa_87_pub                    = 0x1212
+	case slhdsa_sha2_128s_pub            = 0x1220
+	case slhdsa_shake_128s_pub           = 0x1221
+	case slhdsa_sha2_128f_pub            = 0x1222
+	case slhdsa_shake_128f_pub           = 0x1223
+	case slhdsa_sha2_192s_pub            = 0x1224
+	case slhdsa_shake_192s_pub           = 0x1225
+	case slhdsa_sha2_192f_pub            = 0x1226
+	case slhdsa_shake_192f_pub           = 0x1227
+	case slhdsa_sha2_256s_pub            = 0x1228
+	case slhdsa_shake_256s_pub           = 0x1229
+	case slhdsa_sha2_256f_pub            = 0x122a
+	case slhdsa_shake_256f_pub           = 0x122b
 	case multisig                        = 0x1239
 	case multikey                        = 0x123a
 	case nonce                           = 0x123b
@@ -234,6 +249,26 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 	case mlkem_768_priv                  = 0x1314
 	case mlkem_1024_priv                 = 0x1315
 	case jwk_jcs_priv                    = 0x1316
+	case mldsa_44_priv                   = 0x1317
+	case mldsa_65_priv                   = 0x1318
+	case mldsa_87_priv                   = 0x1319
+	case mldsa_44_priv_seed              = 0x131a
+	case mldsa_65_priv_seed              = 0x131b
+	case mldsa_87_priv_seed              = 0x131c
+	case slhdsa_sha2_128s_priv           = 0x131d
+	case slhdsa_shake_128s_priv          = 0x131e
+	case slhdsa_sha2_128f_priv           = 0x131f
+	case slhdsa_shake_128f_priv          = 0x1320
+	case slhdsa_sha2_192s_priv           = 0x1321
+	case slhdsa_shake_192s_priv          = 0x1322
+	case slhdsa_sha2_192f_priv           = 0x1323
+	case slhdsa_shake_192f_priv          = 0x1324
+	case slhdsa_sha2_256s_priv           = 0x1325
+	case slhdsa_shake_256s_priv          = 0x1326
+	case slhdsa_sha2_256f_priv           = 0x1327
+	case slhdsa_shake_256f_priv          = 0x1328
+	case bip340_pub                      = 0x1340
+	case bip340_priv                     = 0x1341
 	case lamport_sha3_512_pub            = 0x1a14
 	case lamport_sha3_384_pub            = 0x1a15
 	case lamport_sha3_256_pub            = 0x1a16
@@ -249,8 +284,10 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 	case lamport_sha3_512_sig_share      = 0x1a54
 	case lamport_sha3_384_sig_share      = 0x1a55
 	case lamport_sha3_256_sig_share      = 0x1a56
-	case kangarootwelve                  = 0x1d01
+	case kt_128                          = 0x1d01
+	case kt_256                          = 0x1d02
 	case aes_gcm_256                     = 0x2000
+	case ech                             = 0x2679
 	case silverpine                      = 0x3f42
 	case sm3_256                         = 0x534d
 	case sha256a                         = 0x7012
@@ -616,10 +653,20 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 	case arweave_ns                      = 0xb29910
 	case subspace_ns                     = 0xb39910
 	case kumandra_ns                     = 0xb49910
+	case massa                           = 0xb59910
+	case massa_mainnet                   = 0xb59911
+	case massa_buildnet                  = 0xb59912
+	case massa_deweb                     = 0xb59913
+	case massa_gossip                    = 0xb59914
+	case massa_mns                       = 0xb59915
+	case massa_sc                        = 0xb59916
+	case massa_gossip_id                 = 0xb59917
+	case adnl                            = 0xb69910
 	case es256                           = 0xd01200
 	case es384                           = 0xd01201
 	case es512                           = 0xd01202
 	case rs256                           = 0xd01205
+	case bip340                          = 0xd01206
 	case es256k_msig                     = 0xd01300
 	case bls12_381_g1_msig               = 0xd01301
 	case bls12_381_g2_msig               = 0xd01302
@@ -1052,6 +1099,36 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 		    return "key"
 		case .mlkem_1024_pub:
 		    return "key"
+		case .mldsa_44_pub:
+		    return "key"
+		case .mldsa_65_pub:
+		    return "key"
+		case .mldsa_87_pub:
+		    return "key"
+		case .slhdsa_sha2_128s_pub:
+		    return "key"
+		case .slhdsa_shake_128s_pub:
+		    return "key"
+		case .slhdsa_sha2_128f_pub:
+		    return "key"
+		case .slhdsa_shake_128f_pub:
+		    return "key"
+		case .slhdsa_sha2_192s_pub:
+		    return "key"
+		case .slhdsa_shake_192s_pub:
+		    return "key"
+		case .slhdsa_sha2_192f_pub:
+		    return "key"
+		case .slhdsa_shake_192f_pub:
+		    return "key"
+		case .slhdsa_sha2_256s_pub:
+		    return "key"
+		case .slhdsa_shake_256s_pub:
+		    return "key"
+		case .slhdsa_sha2_256f_pub:
+		    return "key"
+		case .slhdsa_shake_256f_pub:
+		    return "key"
 		case .multisig:
 		    return "multiformat"
 		case .multikey:
@@ -1102,6 +1179,46 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 		    return "key"
 		case .jwk_jcs_priv:
 		    return "key"
+		case .mldsa_44_priv:
+		    return "key"
+		case .mldsa_65_priv:
+		    return "key"
+		case .mldsa_87_priv:
+		    return "key"
+		case .mldsa_44_priv_seed:
+		    return "key"
+		case .mldsa_65_priv_seed:
+		    return "key"
+		case .mldsa_87_priv_seed:
+		    return "key"
+		case .slhdsa_sha2_128s_priv:
+		    return "key"
+		case .slhdsa_shake_128s_priv:
+		    return "key"
+		case .slhdsa_sha2_128f_priv:
+		    return "key"
+		case .slhdsa_shake_128f_priv:
+		    return "key"
+		case .slhdsa_sha2_192s_priv:
+		    return "key"
+		case .slhdsa_shake_192s_priv:
+		    return "key"
+		case .slhdsa_sha2_192f_priv:
+		    return "key"
+		case .slhdsa_shake_192f_priv:
+		    return "key"
+		case .slhdsa_sha2_256s_priv:
+		    return "key"
+		case .slhdsa_shake_256s_priv:
+		    return "key"
+		case .slhdsa_sha2_256f_priv:
+		    return "key"
+		case .slhdsa_shake_256f_priv:
+		    return "key"
+		case .bip340_pub:
+		    return "key"
+		case .bip340_priv:
+		    return "key"
 		case .lamport_sha3_512_pub:
 		    return "key"
 		case .lamport_sha3_384_pub:
@@ -1132,10 +1249,14 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 		    return "multisig"
 		case .lamport_sha3_256_sig_share:
 		    return "multisig"
-		case .kangarootwelve:
+		case .kt_128:
+		    return "multihash"
+		case .kt_256:
 		    return "multihash"
 		case .aes_gcm_256:
 		    return "encryption"
+		case .ech:
+		    return "multiaddr"
 		case .silverpine:
 		    return "multiaddr"
 		case .sm3_256:
@@ -1866,6 +1987,24 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 		    return "namespace"
 		case .kumandra_ns:
 		    return "namespace"
+		case .massa:
+		    return "namespace"
+		case .massa_mainnet:
+		    return "namespace"
+		case .massa_buildnet:
+		    return "namespace"
+		case .massa_deweb:
+		    return "namespace"
+		case .massa_gossip:
+		    return "namespace"
+		case .massa_mns:
+		    return "namespace"
+		case .massa_sc:
+		    return "namespace"
+		case .massa_gossip_id:
+		    return "namespace"
+		case .adnl:
+		    return "namespace"
 		case .es256:
 		    return "varsig"
 		case .es384:
@@ -1873,6 +2012,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 		case .es512:
 		    return "varsig"
 		case .rs256:
+		    return "varsig"
+		case .bip340:
 		    return "varsig"
 		case .es256k_msig:
 		    return "multisig"
@@ -1943,7 +2084,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 		case .dag_cbor:
 		    return "MerkleDAG cbor"
 		case .libp2p_key:
-		    return "Libp2p Public Key"
+		    return "Libp2p public key"
 		case .git_raw:
 		    return "Raw Git object"
 		case .torrent_info:
@@ -2129,15 +2270,15 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 		case .sha2_512_256:
 		    return "aka SHA-512/256; as specified by FIPS 180-4."
 		case .p256_pub:
-		    return "P-256 public Key (compressed)"
+		    return "P-256 public key (compressed)"
 		case .p384_pub:
-		    return "P-384 public Key (compressed)"
+		    return "P-384 public key (compressed)"
 		case .p521_pub:
-		    return "P-521 public Key (compressed)"
+		    return "P-521 public key (compressed)"
 		case .ed448_pub:
-		    return "Ed448 public Key"
+		    return "Ed448 public key"
 		case .x448_pub:
-		    return "X448 public Key"
+		    return "X448 public key"
 		case .rsa_pub:
 		    return "RSA public key. DER-encoded ASN.1 type RSAPublicKey according to IETF RFC 8017 (PKCS #1)"
 		case .sm2_pub:
@@ -2156,6 +2297,36 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 		    return "ML-KEM 768 public key; as specified by FIPS 203"
 		case .mlkem_1024_pub:
 		    return "ML-KEM 1024 public key; as specified by FIPS 203"
+		case .mldsa_44_pub:
+		    return "ML-DSA 44 public key; as specified by FIPS 204"
+		case .mldsa_65_pub:
+		    return "ML-DSA 65 public key; as specified by FIPS 204"
+		case .mldsa_87_pub:
+		    return "ML-DSA 87 public key; as specified by FIPS 204"
+		case .slhdsa_sha2_128s_pub:
+		    return "SLH-DSA-SHA2-128s public key; as specified by FIPS 205"
+		case .slhdsa_shake_128s_pub:
+		    return "SLH-DSA-SHAKE-128s public key; as specified by FIPS 205"
+		case .slhdsa_sha2_128f_pub:
+		    return "SLH-DSA-SHA2-128f public key; as specified by FIPS 205"
+		case .slhdsa_shake_128f_pub:
+		    return "SLH-DSA-SHAKE-128f public key; as specified by FIPS 205"
+		case .slhdsa_sha2_192s_pub:
+		    return "SLH-DSA-SHA2-192s public key; as specified by FIPS 205"
+		case .slhdsa_shake_192s_pub:
+		    return "SLH-DSA-SHAKE-192s public key; as specified by FIPS 205"
+		case .slhdsa_sha2_192f_pub:
+		    return "SLH-DSA-SHA2-192f public key; as specified by FIPS 205"
+		case .slhdsa_shake_192f_pub:
+		    return "SLH-DSA-SHAKE-192f public key; as specified by FIPS 205"
+		case .slhdsa_sha2_256s_pub:
+		    return "SLH-DSA-SHA2-256s public key; as specified by FIPS 205"
+		case .slhdsa_shake_256s_pub:
+		    return "SLH-DSA-SHAKE-256s public key; as specified by FIPS 205"
+		case .slhdsa_sha2_256f_pub:
+		    return "SLH-DSA-SHA2-256f public key; as specified by FIPS 205"
+		case .slhdsa_shake_256f_pub:
+		    return "SLH-DSA-SHAKE-256f public key; as specified by FIPS 205"
 		case .multisig:
 		    return "Digital signature multiformat"
 		case .multikey:
@@ -2201,11 +2372,51 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 		case .mlkem_512_priv:
 		    return "ML-KEM 512 private key; as specified by FIPS 203"
 		case .mlkem_768_priv:
-		    return "ML-KEM 768 public key; as specified by FIPS 203"
+		    return "ML-KEM 768 private key; as specified by FIPS 203"
 		case .mlkem_1024_priv:
-		    return "ML-KEM 1024 public key; as specified by FIPS 203"
+		    return "ML-KEM 1024 private key; as specified by FIPS 203"
 		case .jwk_jcs_priv:
 		    return "JSON object containing only the required members of a JWK (RFC 7518 and RFC 7517) representing the private key. Serialisation based on JCS (RFC 8785)"
+		case .mldsa_44_priv:
+		    return "ML-DSA 44 private key; expanded key format (2560 bytes) as specified by FIPS 204"
+		case .mldsa_65_priv:
+		    return "ML-DSA 65 private key; expanded key format (4032 bytes) as specified by FIPS 204"
+		case .mldsa_87_priv:
+		    return "ML-DSA 87 private key; expanded key format (4896 bytes) as specified by FIPS 204"
+		case .mldsa_44_priv_seed:
+		    return "ML-DSA 44 private key seed; (32 bytes) as specified by FIPS 204"
+		case .mldsa_65_priv_seed:
+		    return "ML-DSA 65 private key seed; (32 bytes) as specified by FIPS 204"
+		case .mldsa_87_priv_seed:
+		    return "ML-DSA 87 private key seed; (32 bytes) as specified by FIPS 204"
+		case .slhdsa_sha2_128s_priv:
+		    return "SLH-DSA-SHA2-128s private key; as specified by FIPS 205"
+		case .slhdsa_shake_128s_priv:
+		    return "SLH-DSA-SHAKE-128s private key; as specified by FIPS 205"
+		case .slhdsa_sha2_128f_priv:
+		    return "SLH-DSA-SHA2-128f private key; as specified by FIPS 205"
+		case .slhdsa_shake_128f_priv:
+		    return "SLH-DSA-SHAKE-128f private key; as specified by FIPS 205"
+		case .slhdsa_sha2_192s_priv:
+		    return "SLH-DSA-SHA2-192s private key; as specified by FIPS 205"
+		case .slhdsa_shake_192s_priv:
+		    return "SLH-DSA-SHAKE-192s private key; as specified by FIPS 205"
+		case .slhdsa_sha2_192f_priv:
+		    return "SLH-DSA-SHA2-192f private key; as specified by FIPS 205"
+		case .slhdsa_shake_192f_priv:
+		    return "SLH-DSA-SHAKE-192f private key; as specified by FIPS 205"
+		case .slhdsa_sha2_256s_priv:
+		    return "SLH-DSA-SHA2-256s private key; as specified by FIPS 205"
+		case .slhdsa_shake_256s_priv:
+		    return "SLH-DSA-SHAKE-256s private key; as specified by FIPS 205"
+		case .slhdsa_sha2_256f_priv:
+		    return "SLH-DSA-SHA2-256f private key; as specified by FIPS 205"
+		case .slhdsa_shake_256f_priv:
+		    return "SLH-DSA-SHAKE-256f private key; as specified by FIPS 205"
+		case .bip340_pub:
+		    return "BIP340 public key"
+		case .bip340_priv:
+		    return "BIP340 private key"
 		case .lamport_sha3_512_pub:
 		    return "Lamport public key based on SHA3-512"
 		case .lamport_sha3_384_pub:
@@ -2236,10 +2447,14 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 		    return "Lamport signature share based on SHA3-384 and split with Shamir gf256"
 		case .lamport_sha3_256_sig_share:
 		    return "Lamport signature share based on SHA3-256 and split with Shamir gf256"
-		case .kangarootwelve:
-		    return "KangarooTwelve is an extendable-output hash function based on Keccak-p"
+		case .kt_128:
+		    return "KangarooTwelve KT128 extendable-output hash function (XOF) as defined in RFC 9861"
+		case .kt_256:
+		    return "KangarooTwelve KT256 extendable-output hash function (XOF) as defined in RFC 9861"
 		case .aes_gcm_256:
 		    return "AES Galois/Counter Mode with 256-bit key and 12-byte IV"
+		case .ech:
+		    return "ECHConfigList as defined in RFC 9849 (0x2679 == 9849). See the multiaddr repo for more details."
 		case .silverpine:
 		    return "Experimental QUIC over yggdrasil and ironwood routing protocol"
 		case .sha256a:
@@ -2336,6 +2551,24 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 		    return "Subspace Network Namespace"
 		case .kumandra_ns:
 		    return "Kumandra Network Namespace"
+		case .massa:
+		    return "Massa blockchain ecosystem"
+		case .massa_mainnet:
+		    return "Massa mainnet network"
+		case .massa_buildnet:
+		    return "Massa buildnet network"
+		case .massa_deweb:
+		    return "Massa DeWeb decentralized web"
+		case .massa_gossip:
+		    return "Massa Gossip decentralized messaging"
+		case .massa_mns:
+		    return "Massa Name Service target"
+		case .massa_sc:
+		    return "Massa smart-contract address target"
+		case .massa_gossip_id:
+		    return "Massa Gossip ID target"
+		case .adnl:
+		    return "TON ADNL address: 32-byte SHA-256(0x4813b4c6_LE || Ed25519-pubkey)"
 		case .es256:
 		    return "ES256 Signature Algorithm"
 		case .es384:
@@ -2344,6 +2577,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 		    return "ES512 Signature Algorithm"
 		case .rs256:
 		    return "RS256 Signature Algorithm"
+		case .bip340:
+		    return "BIP340 Signature Algorithm"
 		case .es256k_msig:
 		    return "ES256K (secp256k1) Signature as Multisig"
 		case .bls12_381_g1_msig:
