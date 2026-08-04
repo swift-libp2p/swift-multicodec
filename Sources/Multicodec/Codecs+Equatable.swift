@@ -32,18 +32,22 @@ extension Codecs {
     }
 
     public func isEqual(object: AnyObject?) -> Bool {
-        if let obj = object as? Codecs {
+        switch object {
+        case let obj as Codecs:
             return self.rawValue == obj.rawValue
-        } else if let obj = object as? Int64 {
-            return self.rawValue == Int64(obj)
-        } else if let obj = object as? Int {
-            return self.rawValue == Int64(obj)
-        } else if let obj = object as? UInt64 {
-            return self.rawValue == Int64(obj)
-        } else if let obj = object as? String {
+        case let obj as UInt64:
+            return self.rawValue == obj
+        case let obj as Int64:
+            // `rawValue` is a UInt64; a negative code can never match, and guarding
+            // avoids a trap from `UInt64(obj)` on negative input.
+            return obj >= 0 && self.rawValue == UInt64(obj)
+        case let obj as Int:
+            return obj >= 0 && self.rawValue == UInt64(obj)
+        case let obj as String:
             return self.name == obj
+        default:
+            return false
         }
-        return false
     }
 }
 
