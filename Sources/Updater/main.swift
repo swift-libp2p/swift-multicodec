@@ -109,11 +109,11 @@ let ENUM_ADDITIONAL_COMPONENTS = """
             self = match
         }
 
-        /// Instantiation via signed VarInt
+        /// Instantiation via unsigned VarInt
         {{+enum_scope+}} init(_ bytes:[UInt8]) throws {
-            if let s = Codecs(rawValue: uVarInt(bytes).0) {
-                self = s
-            } else { throw MulticodecError.UnknownCodecId }
+            let (value, bytesRead) = uVarInt(bytes)
+            guard bytesRead > 0, let s = Codecs(rawValue: value) else { throw MulticodecError.UnknownCodecId }
+            self = s
         }
         
         {{+enum_scope+}} init(_ code:Int) throws {
@@ -179,22 +179,32 @@ struct CSVData {
 }
 
 func parseStringIntoCSV(_ csv: String, headerRow: Int? = nil) -> [CSVData] {
-    var rows = csv.split(separator: "\n")  //TODO: Handle Carriage Returns...
+    // Normalize CRLF/CR line endings so a trailing "\r" doesn't cling to the last column.
+    let normalized = csv.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
+    var rows = normalized.split(separator: "\n")
     var headerKeys: [String] = []
     if let hr = headerRow, rows.count > hr {
-        headerKeys = rows[hr].split(separator: ",").map { stripLeadingSpaces(String($0)) }
+        // Keep empty subsequences so column indices stay aligned with the header.
+        headerKeys = rows[hr].split(separator: ",", omittingEmptySubsequences: false).map {
+            stripLeadingSpaces(String($0))
+        }
         rows.remove(at: hr)
     }
+    // Cap the number of splits at one-per-column so commas inside the final column
+    // (e.g. a codec's `description`) don't spill into phantom columns. `omittingEmptySubsequences: false`
+    // preserves empty fields so `code`/`tag`/`description` never shift out of alignment.
+    let maxSplits = headerKeys.isEmpty ? Int.max : headerKeys.count - 1
     return rows.enumerated().compactMap {
         CSVData(
             rowNum: $0.offset,
-            columns: $0.element.split(separator: ",").enumerated().map {
-                if headerKeys.count > $0.offset {
-                    return (key: headerKeys[$0.offset], value: stripLeadingSpaces(String($0.element)))
-                } else {
-                    return (key: "", value: stripLeadingSpaces(String($0.element)))
+            columns: $0.element.split(separator: ",", maxSplits: maxSplits, omittingEmptySubsequences: false)
+                .enumerated().map {
+                    if headerKeys.count > $0.offset {
+                        return (key: headerKeys[$0.offset], value: stripLeadingSpaces(String($0.element)))
+                    } else {
+                        return (key: "", value: stripLeadingSpaces(String($0.element)))
+                    }
                 }
-            }
         )
     }
 }
@@ -359,7 +369,8 @@ func generateComputedProperty(
 
     var defaultNeeded: Bool = false
     let entries: [String] = cases.compactMap {
-        if let val = $0.computedProperties[compProp.caseKey] {
+        // Empty values will fall through to the default case
+        if let val = $0.computedProperties[compProp.caseKey], !"\(val)".isEmpty {
             var entry = COMPUTED_PROPERTY_CASE
 
             entry = entry.replacingOccurrences(of: "{{+case_title+}}", with: $0.title)
