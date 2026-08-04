@@ -366,7 +366,8 @@ func generateComputedProperty(
 
     var defaultNeeded: Bool = false
     let entries: [String] = cases.compactMap {
-        if let val = $0.computedProperties[compProp.caseKey] {
+        // Empty values will fall through to the default case
+        if let val = $0.computedProperties[compProp.caseKey], !"\(val)".isEmpty {
             var entry = COMPUTED_PROPERTY_CASE
 
             entry = entry.replacingOccurrences(of: "{{+case_title+}}", with: $0.title)
