@@ -185,7 +185,9 @@ func parseStringIntoCSV(_ csv: String, headerRow: Int? = nil) -> [CSVData] {
     var headerKeys: [String] = []
     if let hr = headerRow, rows.count > hr {
         // Keep empty subsequences so column indices stay aligned with the header.
-        headerKeys = rows[hr].split(separator: ",", omittingEmptySubsequences: false).map { stripLeadingSpaces(String($0)) }
+        headerKeys = rows[hr].split(separator: ",", omittingEmptySubsequences: false).map {
+            stripLeadingSpaces(String($0))
+        }
         rows.remove(at: hr)
     }
     // Cap the number of splits at one-per-column so commas inside the final column
@@ -195,13 +197,14 @@ func parseStringIntoCSV(_ csv: String, headerRow: Int? = nil) -> [CSVData] {
     return rows.enumerated().compactMap {
         CSVData(
             rowNum: $0.offset,
-            columns: $0.element.split(separator: ",", maxSplits: maxSplits, omittingEmptySubsequences: false).enumerated().map {
-                if headerKeys.count > $0.offset {
-                    return (key: headerKeys[$0.offset], value: stripLeadingSpaces(String($0.element)))
-                } else {
-                    return (key: "", value: stripLeadingSpaces(String($0.element)))
+            columns: $0.element.split(separator: ",", maxSplits: maxSplits, omittingEmptySubsequences: false)
+                .enumerated().map {
+                    if headerKeys.count > $0.offset {
+                        return (key: headerKeys[$0.offset], value: stripLeadingSpaces(String($0.element)))
+                    } else {
+                        return (key: "", value: stripLeadingSpaces(String($0.element)))
+                    }
                 }
-            }
         )
     }
 }
