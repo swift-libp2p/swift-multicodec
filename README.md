@@ -46,15 +46,16 @@ let package = Package(
 
 import Multicodec
 
-let prefixedProtobuf = addPrefix(.protobuf, protobuf)
-// prefixedProtobuf 0x50...
+let protobuf: [UInt8] = Array("hello".utf8)
+let prefixedProtobuf = addPrefix(codec: .protobuf, bytes: protobuf)
+// prefixedProtobuf = [0x50, ...]
 
 // The multicodec codec values can be accessed directly:
-print(Codecs.DAG_CBOR.code) //113
+print(Codecs.dag_cbor.code) // 113
 
 // To get the string representation and description of a codec (e.g. for error messages):
-print(Codecs(113).name)        // dag-cbor
-print(Codecs(113).description) // optional("MerkleDAG cbor")
+print(try Codecs(113).name)        // dag-cbor
+print(try Codecs(113).description) // Optional("MerkleDAG cbor")
 ```
 
 ### API
@@ -81,4 +82,4 @@ Big thanks to work done by the [js-multicodec](https://github.com/multiformats/j
 
 ## License
 
-[MIT](LICENSE) © 2022 Breth Inc.
+[MIT](LICENSE) © 2026 Breth Inc.
