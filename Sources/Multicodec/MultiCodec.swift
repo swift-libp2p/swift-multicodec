@@ -18,14 +18,39 @@
 import Foundation
 import VarInt
 
-/// Extract the prefix value from a multicodec prefixed byte buffer
+// MARK: - Decoding
+
+extension Codecs {
+
+    /// Decodes the MultiCodec prefix at the front of `bytes`, along with the payload that follows it.
+    ///
+    /// ```swift
+    /// let (codec, payload) = try Codecs.decode(prefixed: buffer)
+    /// ```
+    ///
+    /// - Parameter bytes: a MultiCodec prefixed byte buffer
+    /// - Returns: the Codec the buffer is prefixed with, and everything after the prefix
+    /// - Throws: `prefixExtractionBufferTooSmall` if the buffer ended before the
+    ///   prefix was complete, `prefixExtractionValueOverflow` if the prefix
+    ///   wasn't a valid, minimally encoded, 64 bit uVarInt, or `unknownCodecId`
+    ///   if no known codec goes by the decoded code.
+    public static func decode<Bytes: Collection<UInt8>>(
+        prefixed bytes: Bytes
+    ) throws -> (codec: Codecs, payload: Bytes.SubSequence) {
+        let (value, end) = try decodeVarIntPrefix(bytes)
+        guard let codec = Codecs(rawValue: value) else { throw MultiCodecError.unknownCodecId }
+        return (codec: codec, payload: bytes[end...])
+    }
+}
+
+/// Decodes the VarInt at the front of `bytes`, reporting failures as `MultiCodecError`.
 ///
-/// - Parameter bytes: a multicodec prefixed byte buffer
-/// - Returns: the prefix value of the given data
-/// - Throws: `prefixExtractionBufferTooSmall` if the buffer was too small. `prefixExtractionValueOverflow` if the value was larger than 64 bits.
-public func extractPrefix(bytes: [UInt8]) throws -> UInt64 {
+/// - Returns: the decoded prefix, and the index of the first byte after it.
+internal func decodeVarIntPrefix<Bytes: Collection<UInt8>>(
+    _ bytes: Bytes
+) throws -> (value: UInt64, end: Bytes.Index) {
     do {
-        return try VarInt.decode(bytes).value
+        return try VarInt.decode(bytes)
     } catch VarIntError.needsMoreBytes {
         // The buffer was empty, or ended part way through the prefix
         throw MultiCodecError.prefixExtractionBufferTooSmall
