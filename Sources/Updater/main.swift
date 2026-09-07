@@ -272,7 +272,7 @@ func generateEnum(
     e = e.replacingOccurrences(of: "{{+enum_scope+}}", with: scope.rawValue)
     e = e.replacingOccurrences(of: "{{+enum_title+}}", with: title)  //Enforce CamelCase???
     if let rt = rawType {
-        e = e.replacingOccurrences(of: "{{+enum_rawType+}}", with: " :\(rt.self)")
+        e = e.replacingOccurrences(of: "{{+enum_rawType+}}", with: ": \(rt.self)")
         if !protocolConformances.isEmpty {
             e = e.replacingOccurrences(
                 of: "{{+enum_protocols+}}",
