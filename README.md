@@ -12,6 +12,7 @@
 - [Install](#install)
 - [Usage](#usage)
   - [Example](#example)
+  - [Tags and Status](#tags-and-status)
   - [API](#api)
 - [Updating the Codec Values](#updating-the-codec-values)
 - [Contributing](#contributing) 
