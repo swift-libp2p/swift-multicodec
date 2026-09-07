@@ -12,6 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Foundation
 import Multicodec
 import Testing
 import VarInt
@@ -66,14 +67,14 @@ struct MulticodecTests {
         let buf: [UInt8] = Array("hey".utf8)
         let prefixedBuf = try addPrefix(multiCodec: "protobuf", bytes: buf)
         #expect(try getCodec(bytes: prefixedBuf) == "protobuf")
-        #expect(try removePrefix(bytes: prefixedBuf) == buf)
+        #expect(Array(try removePrefix(bytes: prefixedBuf)) == buf)
     }
 
     @Test func testEncodeDecodeBuffer1() throws {
         let buf: [UInt8] = Array("hey".utf8)
         let prefixedBuf = try addPrefix(code: 0x70, bytes: buf)
         #expect(try getCodec(bytes: prefixedBuf) == "dag-pb")
-        #expect(try removePrefix(bytes: prefixedBuf) == buf)
+        #expect(Array(try removePrefix(bytes: prefixedBuf)) == buf)
     }
 
     @Test func testEncodeDecodeBuffer2() throws {
@@ -96,7 +97,7 @@ struct MulticodecTests {
         for codec in Codecs.allCases {
             let prefixedBuf = try addPrefix(multiCodec: codec.name, bytes: buf)
             #expect(try getCodec(bytes: prefixedBuf) == codec.name)
-            #expect(try removePrefix(bytes: prefixedBuf) == buf)
+            #expect(Array(try removePrefix(bytes: prefixedBuf)) == buf)
         }
     }
 
@@ -105,7 +106,7 @@ struct MulticodecTests {
         for codec in Codecs.allCases {
             let prefixedBuf = addPrefix(codec: codec, bytes: buf)
             #expect(try getCodec(bytes: prefixedBuf) == codec.name)
-            #expect(try removePrefix(bytes: prefixedBuf) == buf)
+            #expect(Array(try removePrefix(bytes: prefixedBuf)) == buf)
         }
     }
 
@@ -114,7 +115,7 @@ struct MulticodecTests {
         for codec in Codecs.allCases {
             let prefixedBuf = try addPrefix(code: codec.rawValue, bytes: buf)
             #expect(try getCodec(bytes: prefixedBuf) == codec.name)
-            #expect(try removePrefix(bytes: prefixedBuf) == buf)
+            #expect(Array(try removePrefix(bytes: prefixedBuf)) == buf)
         }
     }
 
@@ -131,6 +132,64 @@ struct MulticodecTests {
         //VarIntBytes is a collection, so it concatenates with a byte buffer directly
         let buf: [UInt8] = Array("hey".utf8)
         #expect(prefix + buf == addPrefix(codec: .p2p, bytes: buf))
+    }
+
+    // MARK: - Single Pass Decoding
+
+    @Test func testDecodePrefixedReturnsCodecAndPayloadSlice() throws {
+        let buf: [UInt8] = Array("hey".utf8)
+        let prefixedBuf = addPrefix(codec: .dag_cbor, bytes: buf)
+
+        let (codec, payload) = try Codecs.decode(prefixed: prefixedBuf)
+        #expect(codec == Codecs.dag_cbor)
+        #expect(Array(payload) == buf)
+
+        //The payload indices are those of the original buffer, not a rebased copy
+        #expect(payload.startIndex == Codecs.dag_cbor.asVarInt.count)
+        #expect(payload.endIndex == prefixedBuf.endIndex)
+    }
+
+    @Test func testDecodePrefixedErrors() throws {
+        #expect(throws: MultiCodecError.unknownCodecId) {
+            try Codecs.decode(prefixed: UInt64(0xffee).varIntBytes.bytes + Array("hey".utf8))
+        }
+        #expect(throws: MultiCodecError.prefixExtractionBufferTooSmall) {
+            try Codecs.decode(prefixed: [UInt8]())
+        }
+        #expect(throws: MultiCodecError.prefixExtractionBufferTooSmall) {
+            try Codecs.decode(prefixed: [0x80] as [UInt8])
+        }
+    }
+
+    // MARK: - Generic Byte Collections
+
+    @Test func testDecodingFromData() throws {
+        let prefixedData = Data("hey".encodeUTF8(as: .dag_cbor))
+
+        #expect(try getCodec(bytes: prefixedData) == "dag-cbor")
+        #expect(try getCodecEnum(bytes: prefixedData) == Codecs.dag_cbor)
+        #expect(try extractPrefix(bytes: prefixedData) == Codecs.dag_cbor.rawValue)
+        #expect(try Codecs(prefixedData) == Codecs.dag_cbor)
+        #expect(try prefixedData.decodeMultiCodec(using: .utf8).contents == "hey")
+
+        let (codec, payload) = try prefixedData.multiCodec()
+        #expect(codec == Codecs.dag_cbor)
+        #expect(String(decoding: payload, as: UTF8.self) == "hey")
+    }
+
+    @Test func testDecodingFromSlice() throws {
+        let framed = [0xff] + "hey".encodeUTF8(as: .dag_cbor) + [0xff]
+        let prefixedSlice = framed[1..<(framed.count - 1)]
+
+        #expect(try getCodec(bytes: prefixedSlice) == "dag-cbor")
+        #expect(Array(try removePrefix(bytes: prefixedSlice)) == Array("hey".utf8))
+        #expect(try prefixedSlice.extractCodec().codec == Codecs.dag_cbor)
+    }
+
+    /// The prefix bytes are themselves a byte collection, so they decode too
+    @Test func testDecodingFromVarIntBytes() throws {
+        #expect(try Codecs(Codecs.p2p.asVarInt) == Codecs.p2p)
+        #expect(try getCodecEnum(bytes: Codecs.p2p.asVarInt) == Codecs.p2p)
     }
 
     /// Int instantiation time is roughly equal between the enum and dictionary (0.00025s) ...
