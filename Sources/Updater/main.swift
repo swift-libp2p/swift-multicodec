@@ -96,36 +96,42 @@ let ENUM_ADDITIONAL_COMPONENTS = """
 
         /// Allows instantiation of a Codec based on it's name
         /// ```
-        ///  let p2p = try? Codecs("p2p")
+        ///  let p2p = try? Codecs(name: "p2p")
         ///  print(p2p.code)        //"0x01a5"
         ///  print(p2p.name)        //"p2p"
         ///  print(p2p.tag)         //"multihash"
         ///  print(p2p.details)     //Optional("libp2p")
         /// ```
         /// - Note: The string name is lowercased and replaces dashes (-) for underscores (_) before checking for a match...
-        {{+enum_scope+}} init(_ name: String) throws {
+        {{+enum_scope+}} init(name: String) throws {
             let n = name.replacingOccurrences(of: "-", with: "_").lowercased()
             guard let match = Codecs.allCases.first(where: { "\\($0)" == n }) else { throw MultiCodecError.unknownCodecString }
             self = match
         }
 
         /// Instantiation via the unsigned VarInt at the front of any byte collection
-        {{+enum_scope+}} init(_ bytes: some Collection<UInt8>) throws {
+        /// ```
+        ///  let p2p = try? Codecs(varInt: [0xa5, 0x03])
+        /// ```
+        {{+enum_scope+}} init(varInt bytes: some Collection<UInt8>) throws {
             guard let value = try? VarInt.decode(bytes).value, let s = Codecs(rawValue: value) else { throw MultiCodecError.unknownCodecId }
             self = s
         }
-        
-        {{+enum_scope+}} init(_ code: Int) throws {
+
+        /// Instantiation via a Codec's integer code (ex: 0x70)
+        {{+enum_scope+}} init(code: Int) throws {
             guard let raw = UInt64(exactly: code), let s = Codecs(rawValue: raw) else { throw MultiCodecError.unknownCodecId }
             self = s
         }
-        
-        {{+enum_scope+}} init(_ code: Int64) throws {
+
+        /// Instantiation via a Codec's integer code (ex: 0x70)
+        {{+enum_scope+}} init(code: Int64) throws {
             guard let raw = UInt64(exactly: code), let s = Codecs(rawValue: raw) else { throw MultiCodecError.unknownCodecId }
             self = s
         }
-        
-        {{+enum_scope+}} init(_ code: UInt64) throws {
+
+        /// Instantiation via a Codec's integer code (ex: 0x70)
+        {{+enum_scope+}} init(code: UInt64) throws {
             guard let s = Codecs(rawValue: code) else { throw MultiCodecError.unknownCodecId }
             self = s
         }
