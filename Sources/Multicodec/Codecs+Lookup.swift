@@ -64,3 +64,17 @@ extension Codecs {
         name.replacingOccurrences(of: "_", with: "-").lowercased()
     }
 }
+
+// MARK: - Tags
+
+extension Codecs {
+
+    /// Every Codec the multicodec table files under the given tag
+    ///
+    /// ```swift
+    /// let protocols = Codecs.codecs(tagged: .multiaddr)
+    /// ```
+    public static func codecs(tagged tag: CodecTag) -> [Codecs] {
+        Codecs.allCases.filter { $0.tag == tag }
+    }
+}
