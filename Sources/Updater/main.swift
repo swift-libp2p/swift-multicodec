@@ -111,8 +111,7 @@ let ENUM_ADDITIONAL_COMPONENTS = """
 
         /// Instantiation via unsigned VarInt
         {{+enum_scope+}} init(_ bytes:[UInt8]) throws {
-            let (value, bytesRead) = uVarInt(bytes)
-            guard bytesRead > 0, let s = Codecs(rawValue: value) else { throw MulticodecError.UnknownCodecId }
+            guard let value = try? VarInt.decode(bytes).value, let s = Codecs(rawValue: value) else { throw MulticodecError.UnknownCodecId }
             self = s
         }
         
@@ -149,7 +148,7 @@ let ENUM_ADDITIONAL_COMPONENTS = """
         {{+enum_scope+}} var name:String { return "\\(self)".replacingOccurrences(of: "_", with: "-") }
         
         /// Returns the code for this Codec as a VarInt Byte Buffer
-        {{+enum_scope+}} var asVarInt:[UInt8] { return putUVarInt(self.rawValue) }
+        {{+enum_scope+}} var asVarInt:[UInt8] { return self.rawValue.varIntBytes.bytes }
     """
 
 // MARK: - Network Data Fetch

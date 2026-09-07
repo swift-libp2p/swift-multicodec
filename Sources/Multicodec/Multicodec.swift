@@ -31,14 +31,15 @@ enum MulticodecError: Error {
 /// - Returns: the prefix value of the given data
 /// - Throws: PrefixExtractionBufferTooSmall if the buffer was too small. PrefixExtractionValueOverflow if the value was larger than 64 bits.
 public func extractPrefix(bytes: [UInt8]) throws -> UInt64 {
-    let (prefix, bytesRead) = uVarInt(bytes)
-    // Check for error condition
-    if prefix == 0 && bytesRead <= 0 {
-        if bytesRead == 0 { throw MulticodecError.PrefixExtractionBufferTooSmall }
+    do {
+        return try VarInt.decode(bytes).value
+    } catch VarIntError.needsMoreBytes {
+        // The buffer was empty, or ended part way through the prefix
+        throw MulticodecError.PrefixExtractionBufferTooSmall
+    } catch {
+        // The prefix didn't fit in 64 bits, or wasn't minimally encoded
         throw MulticodecError.PrefixExtractionValueOverflow
     }
-
-    return prefix
 }
 
 /// Return the prefix value for a given multicodec string
@@ -47,7 +48,7 @@ public func extractPrefix(bytes: [UInt8]) throws -> UInt64 {
 /// - Returns: the prefix value for the given multicodec as bytes
 /// - Throws: UnknownCodecString if the name was invalid
 public func getPrefix(multiCodec: String) throws -> [UInt8] {
-    putUVarInt(try Codecs(multiCodec).rawValue)
+    try Codecs(multiCodec).rawValue.varIntBytes.bytes
 }
 
 /// Return the prefix value for a given multicodec string
@@ -56,7 +57,7 @@ public func getPrefix(multiCodec: String) throws -> [UInt8] {
 /// - Returns: the prefix value for the given multicodec as bytes
 /// - Throws: UnknownCodecString if the name was invalid
 public func getPrefix(multiCodec: Codecs) -> [UInt8] {
-    putUVarInt(multiCodec.rawValue)
+    multiCodec.rawValue.varIntBytes.bytes
 }
 
 /// Add multicodec prefix to the front of the given byte buffer
@@ -119,8 +120,8 @@ public func addPrefix(codec: Codecs, bytes: [UInt8]) -> [UInt8] {
 /// - Returns: the byte buffer without the prefix
 /// - Throws: See extractPrefix
 public func removePrefix(bytes: [UInt8]) throws -> [UInt8] {
-    let prefix = putUVarInt(try extractPrefix(bytes: bytes))
-    return Array(bytes[prefix.count...])
+    let prefixSize = try extractPrefix(bytes: bytes).varIntSize
+    return Array(bytes[prefixSize...])
 }
 
 /// Get the codec name of the codec in the given byte buffer

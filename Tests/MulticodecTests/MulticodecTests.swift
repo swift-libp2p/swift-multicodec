@@ -120,7 +120,7 @@ struct MulticodecTests {
     }
 
     @Test func testVarIntRoundTrip() throws {
-        #expect(uVarInt(putUVarInt(Codecs.keccak_256.rawValue)).0 == 0x1b)
+        #expect(try UInt64(varInt: Codecs.keccak_256.rawValue.varIntBytes) == 0x1b)
     }
 
     /// Int instantiation time is roughly equal between the enum and dictionary (0.00025s) ...
@@ -160,7 +160,7 @@ struct MulticodecTests {
     @Test func testP2PCodecClassification() throws {
         //Create our buffer with an unknown codec
         let hexInt = UInt64("01a5", radix: 16)!  //p2p int64 code
-        let code: [UInt8] = putUVarInt(hexInt)  //p2p code as UInt8 array
+        let code: [UInt8] = hexInt.varIntBytes.bytes  //p2p code as UInt8 array
         let buf: [UInt8] = Array("hey".utf8)  //Test buffer string
         let prefixedBuf = code + buf  //A p2p buffer
 
@@ -191,7 +191,7 @@ struct MulticodecTests {
     @Test func testGetCodecFromBufferWithUnknownCodec() throws {
         //Create our buffer with an unknown codec
         let hexInt = UInt64("ffee", radix: 16)!  //65518
-        let code: [UInt8] = putUVarInt(hexInt)
+        let code: [UInt8] = hexInt.varIntBytes.bytes
         let buf: [UInt8] = Array("hey".utf8)
         let prefixedBuf = code + buf
 
@@ -208,16 +208,16 @@ struct MulticodecTests {
         }
     }
 
-    /// An empty buffer decodes to (0, 0) at the varint layer; ensure it throws
-    /// instead of silently resolving to the `identity` (0x00) codec.
+    /// An empty buffer throws `needsMoreBytes` at the VarInt layer; ensure it
+    /// throws instead of silently resolving to the `identity` (0x00) codec.
     @Test func testCodecFromEmptyBytesThrows() throws {
         #expect(throws: MulticodecError.UnknownCodecId) {
             try Codecs([UInt8]())
         }
     }
 
-    /// A truncated varint (a lone continuation byte) also decodes to (0, 0);
-    /// ensure it throws rather than resolving to `identity`.
+    /// A truncated VarInt (a lone continuation byte) also throws at the VarInt
+    /// layer; ensure it throws rather than resolving to `identity`.
     @Test func testCodecFromTruncatedVarIntThrows() throws {
         #expect(throws: MulticodecError.UnknownCodecId) {
             try Codecs([0x80] as [UInt8])

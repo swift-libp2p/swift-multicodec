@@ -699,8 +699,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 
     /// Instantiation via unsigned VarInt
     public init(_ bytes:[UInt8]) throws {
-        let (value, bytesRead) = uVarInt(bytes)
-        guard bytesRead > 0, let s = Codecs(rawValue: value) else { throw MulticodecError.UnknownCodecId }
+        guard let value = try? VarInt.decode(bytes).value, let s = Codecs(rawValue: value) else { throw MulticodecError.UnknownCodecId }
         self = s
     }
     
@@ -737,7 +736,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
     public var name:String { return "\(self)".replacingOccurrences(of: "_", with: "-") }
     
     /// Returns the code for this Codec as a VarInt Byte Buffer
-    public var asVarInt:[UInt8] { return putUVarInt(self.rawValue) }
+    public var asVarInt:[UInt8] { return self.rawValue.varIntBytes.bytes }
     
 	public var tag:String {
 	    switch self {
