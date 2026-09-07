@@ -94,21 +94,6 @@ let COMPUTED_PROPERTY_CASE = """
 
 let ENUM_ADDITIONAL_COMPONENTS = """
 
-        /// Allows instantiation of a Codec based on it's name
-        /// ```
-        ///  let p2p = try? Codecs(name: "p2p")
-        ///  print(p2p.code)        //"0x01a5"
-        ///  print(p2p.name)        //"p2p"
-        ///  print(p2p.tag)         //"multihash"
-        ///  print(p2p.details)     //Optional("libp2p")
-        /// ```
-        /// - Note: The string name is lowercased and replaces dashes (-) for underscores (_) before checking for a match...
-        {{+enum_scope+}} init(name: String) throws {
-            let n = name.replacingOccurrences(of: "-", with: "_").lowercased()
-            guard let match = Codecs.allCases.first(where: { "\\($0)" == n }) else { throw MulticodecError.unknownCodecString }
-            self = match
-        }
-
         /// Instantiation via the unsigned VarInt at the front of any byte collection
         /// ```
         ///  let p2p = try? Codecs(varInt: [0xa5, 0x03])
@@ -149,10 +134,7 @@ let ENUM_ADDITIONAL_COMPONENTS = """
         {{+enum_scope+}} var code: UInt64 {
             return self.rawValue
         }
-        
-        /// Returns the name for this Codec
-        {{+enum_scope+}} var name: String { return "\\(self)".replacingOccurrences(of: "_", with: "-") }
-        
+
         /// Returns the code for this Codec as a VarInt Byte Buffer
         {{+enum_scope+}} var asVarInt: VarIntBytes { return self.rawValue.varIntBytes }
     """
@@ -444,6 +426,13 @@ guard !enumCases.isEmpty else {
 }
 
 /// Generate the necessary computed properties to match the table
+///
+/// `name` is generated from the table verbatim rather than derived from the case title.
+/// The case title swaps every dash for an underscore, so deriving the name back out of it
+/// would mangle the 20 codecs whose names legitimately contain an underscore
+/// (ex: `bls12_381-g1-pub`, `jwk_jcs-pub`). Emitting literals also keeps `name` off of
+/// `"\(self)"`, so a future `CustomStringConvertible` conformance can't silently change it.
+let compPropName = ComputedProperty(title: "name", type: String.self, defaultValue: "\"\"", caseKey: "name")
 let compPropTag = ComputedProperty(title: "tag", type: String.self, defaultValue: "", caseKey: "tag")
 /// The generated property is named `details` rather than `description`, both because
 /// it's optional and to leave `description` free for `CustomStringConvertible`.
@@ -463,7 +452,7 @@ guard
         rawType: UInt64.self,
         protocolConformances: ["CaseIterable", "Equatable", "Sendable"],
         cases: enumCases,
-        computedProps: [compPropTag, compPropDes]
+        computedProps: [compPropName, compPropTag, compPropDes]
     )
 else {
     print("Failed to generate Codecs enumeration. Returning without updating.")
