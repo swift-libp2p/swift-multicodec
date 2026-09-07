@@ -47,11 +47,10 @@ let package = Package(
 import Multicodec
 
 let protobuf: [UInt8] = Array("hello".utf8)
-let prefixedProtobuf = addPrefix(codec: .protobuf, bytes: protobuf)
+let prefixedProtobuf = Codecs.protobuf.prefixing(protobuf)
 // prefixedProtobuf = [0x50, ...]
 
-// The codec and its payload are read in a single pass over the prefix,
-// and the payload is a slice of the buffer rather than a copy of it
+// The payload is a slice of the buffer rather than a copy of it
 let (codec, payload) = try Codecs.decode(prefixed: prefixedProtobuf)
 // codec = Codecs.protobuf, payload = [0x68, 0x65, ...]
 
@@ -59,12 +58,20 @@ let (codec, payload) = try Codecs.decode(prefixed: prefixedProtobuf)
 let (_, contents) = try Data(prefixedProtobuf).decodeMultiCodec(using: .utf8)
 // contents = "hello"
 
+// Or just drop the prefix, leaving a slice of the payload behind
+let bytes = try prefixedProtobuf.strippingMulticodecPrefix()
+// bytes = [0x68, 0x65, ...]
+
 // The multicodec codec values can be accessed directly:
 print(Codecs.dag_cbor.code) // 113
 
-// To get the name and the codec table's description of a codec (e.g. for error messages):
-print(try Codecs(113).name)    // dag-cbor
-print(try Codecs(113).details) // Optional("MerkleDAG cbor")
+// Codecs are instantiable by code, name, or from the VarInt prefix
+print(try Codecs(code: 113).name)                // dag-cbor
+print(try Codecs(name: "dag-cbor").code)         // 113
+print(try Codecs(varInt: prefixedProtobuf).name) // protobuf
+
+// To get the codec table's description of a codec (e.g. for error messages):
+print(try Codecs(code: 113).details) // Optional("MerkleDAG cbor")
 ```
 
 ### API
