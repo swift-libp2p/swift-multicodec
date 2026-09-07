@@ -698,8 +698,8 @@ public enum Codecs: UInt64, CaseIterable, Equatable, Sendable {
         self = match
     }
 
-    /// Instantiation via unsigned VarInt
-    public init(_ bytes: [UInt8]) throws {
+    /// Instantiation via the unsigned VarInt at the front of any byte collection
+    public init(_ bytes: some Collection<UInt8>) throws {
         guard let value = try? VarInt.decode(bytes).value, let s = Codecs(rawValue: value) else { throw MultiCodecError.unknownCodecId }
         self = s
     }
