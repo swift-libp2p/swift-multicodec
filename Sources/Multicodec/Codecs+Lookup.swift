@@ -46,12 +46,13 @@ extension Codecs {
     /// interpolation per case on every lookup. Each Codec is keyed by it's canonical name
     /// and, where the two differ, by it's normalized name as well.
     internal static let byName: [String: Codecs] = {
-        var map = [String: Codecs](minimumCapacity: Codecs.allCases.count * 2)
-        //Canonical names go in first so that no alias can ever shadow one
+        var map = [String: Codecs](minimumCapacity: Codecs.allCases.count)
+        // Canonical names go in first so that no alias can ever shadow one
         for codec in Codecs.allCases {
             map[codec.name] = codec
         }
-        for codec in Codecs.allCases {
+        // Only normalize names that need to be (underscores or uppercased)
+        for codec in Codecs.allCases where codec.name.contains(where: { $0 == "_" || $0.isUppercase }) {
             let normalized = Codecs.normalized(codec.name)
             if map[normalized] == nil { map[normalized] = codec }
         }
