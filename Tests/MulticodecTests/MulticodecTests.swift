@@ -62,6 +62,16 @@ struct MulticodecTests {
         }
     }
 
+    /// The lookup only builds a normalized alias for the names that need one, so every
+    /// codec has to still be reachable by the normalized spelling of it's own name.
+    /// - Note: This also fails if two codecs ever normalize to the same string.
+    @Test func testAllCodecsResolveFromTheirNormalizedName() throws {
+        for codec in Codecs.allCases {
+            let normalized = codec.name.replacingOccurrences(of: "_", with: "-").lowercased()
+            #expect(try Codecs(name: normalized) == codec)
+        }
+    }
+
     // MARK: - Labeled Initializers
 
     @Test func testCodecIntInstantiation() throws {
