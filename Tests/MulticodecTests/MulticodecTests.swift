@@ -51,41 +51,59 @@ struct MulticodecTests {
         #expect(Codecs.blake2b_8 == "blake2b-8")
     }
 
+    // MARK: - Labeled Initializers
+
     @Test func testCodecIntInstantiation() throws {
-        #expect(try Codecs(144).name == "eth-block")
-        #expect(try Codecs(112).name == "dag-pb")
-        #expect(try Codecs(0x0111).name == "udp")
-        #expect(try Codecs(0xb201).name == "blake2b-8")
+        #expect(try Codecs(code: 144).name == "eth-block")
+        #expect(try Codecs(code: 112).name == "dag-pb")
+        #expect(try Codecs(code: 0x0111).name == "udp")
+        #expect(try Codecs(code: 0xb201).name == "blake2b-8")
+    }
+
+    @Test func testCodecIntWidthInstantiation() throws {
+        #expect(try Codecs(code: Int(144)) == Codecs.eth_block)
+        #expect(try Codecs(code: Int64(144)) == Codecs.eth_block)
+        #expect(try Codecs(code: UInt64(144)) == Codecs.eth_block)
     }
 
     @Test func testCodecsStringInstantiation() throws {
-        let code = try Codecs("keccak-256")
+        let code = try Codecs(name: "keccak-256")
         #expect(code.rawValue == 0x1b)
     }
 
+    @Test func testCodecsVarIntInstantiation() throws {
+        #expect(try Codecs(varInt: [0xa5, 0x03] as [UInt8]) == Codecs.p2p)
+        #expect(try Codecs(varInt: Codecs.p2p.asVarInt) == Codecs.p2p)
+
+        //Trailing bytes are ignored, only the VarInt at the front is read
+        #expect(try Codecs(varInt: "hey".encodeUTF8(as: .dag_cbor)) == Codecs.dag_cbor)
+    }
+
+    // MARK: - Encoding / Decoding
+
     @Test func testEncodeDecodeBuffer() throws {
         let buf: [UInt8] = Array("hey".utf8)
-        let prefixedBuf = try addPrefix(multiCodec: "protobuf", bytes: buf)
-        #expect(try getCodec(bytes: prefixedBuf) == "protobuf")
-        #expect(Array(try removePrefix(bytes: prefixedBuf)) == buf)
+        let prefixedBuf = try Codecs(name: "protobuf").prefixing(buf)
+        #expect(try prefixedBuf.multiCodec().codec == Codecs.protobuf)
+        #expect(Array(try prefixedBuf.strippingMulticodecPrefix()) == buf)
     }
 
     @Test func testEncodeDecodeBuffer1() throws {
         let buf: [UInt8] = Array("hey".utf8)
-        let prefixedBuf = try addPrefix(code: 0x70, bytes: buf)
-        #expect(try getCodec(bytes: prefixedBuf) == "dag-pb")
-        #expect(Array(try removePrefix(bytes: prefixedBuf)) == buf)
+        let prefixedBuf = try Codecs(code: 0x70).prefixing(buf)
+        #expect(try prefixedBuf.multiCodec().codec == Codecs.dag_pb)
+        #expect(Array(try prefixedBuf.strippingMulticodecPrefix()) == buf)
     }
 
     @Test func testEncodeDecodeBuffer2() throws {
         let prefixedBuf = "hey".encodeUTF8(as: .dag_cbor)
-        #expect(try getCodec(bytes: prefixedBuf) == "dag-cbor")
-        #expect(String(bytes: try removePrefix(bytes: prefixedBuf), encoding: .utf8) == "hey")
+        #expect(try prefixedBuf.multiCodec().codec == Codecs.dag_cbor)
+        #expect(String(bytes: try prefixedBuf.strippingMulticodecPrefix(), encoding: .utf8) == "hey")
     }
 
     @Test func testEncodeDecodeBuffer3() throws {
         let prefixedBuf = "hey".encodeUTF8(as: .eth_block)
-        #expect(try getCodec(bytes: prefixedBuf) == "eth-block")
+        #expect(try prefixedBuf.multiCodec().codec == Codecs.eth_block)
         let decoded = try prefixedBuf.decodeMultiCodec(using: .utf8)
         #expect(decoded.codec == "eth-block")
         #expect(decoded.codec == Codecs.eth_block)
@@ -95,27 +113,27 @@ struct MulticodecTests {
     @Test func testEncodeDecodeBufferAllCasesViaString() throws {
         let buf: [UInt8] = Array("hey".utf8)
         for codec in Codecs.allCases {
-            let prefixedBuf = try addPrefix(multiCodec: codec.name, bytes: buf)
-            #expect(try getCodec(bytes: prefixedBuf) == codec.name)
-            #expect(Array(try removePrefix(bytes: prefixedBuf)) == buf)
+            let prefixedBuf = try Codecs(name: codec.name).prefixing(buf)
+            #expect(try prefixedBuf.multiCodec().codec == codec)
+            #expect(Array(try prefixedBuf.strippingMulticodecPrefix()) == buf)
         }
     }
 
     @Test func testEncodeDecodeBufferAllCasesViaCodec() throws {
         let buf: [UInt8] = Array("hey".utf8)
         for codec in Codecs.allCases {
-            let prefixedBuf = addPrefix(codec: codec, bytes: buf)
-            #expect(try getCodec(bytes: prefixedBuf) == codec.name)
-            #expect(Array(try removePrefix(bytes: prefixedBuf)) == buf)
+            let prefixedBuf = codec.prefixing(buf)
+            #expect(try prefixedBuf.multiCodec().codec == codec)
+            #expect(Array(try prefixedBuf.strippingMulticodecPrefix()) == buf)
         }
     }
 
     @Test func testEncodeDecodeBufferAllCasesViaInt() throws {
         let buf: [UInt8] = Array("hey".utf8)
         for codec in Codecs.allCases {
-            let prefixedBuf = try addPrefix(code: codec.rawValue, bytes: buf)
-            #expect(try getCodec(bytes: prefixedBuf) == codec.name)
-            #expect(Array(try removePrefix(bytes: prefixedBuf)) == buf)
+            let prefixedBuf = try Codecs(code: codec.rawValue).prefixing(buf)
+            #expect(try prefixedBuf.multiCodec().codec == codec)
+            #expect(Array(try prefixedBuf.strippingMulticodecPrefix()) == buf)
         }
     }
 
@@ -124,21 +142,29 @@ struct MulticodecTests {
     }
 
     @Test func testPrefixIsVarIntBytes() throws {
-        let prefix: VarIntBytes = getPrefix(multiCodec: .p2p)
+        let prefix: VarIntBytes = Codecs.p2p.asVarInt
         #expect(Array(prefix) == [0xa5, 0x03])
-        #expect(prefix == Codecs.p2p.asVarInt)
-        #expect(try getPrefix(multiCodec: "p2p") == prefix)
+        #expect(try Codecs(name: "p2p").asVarInt == prefix)
 
         //VarIntBytes is a collection, so it concatenates with a byte buffer directly
         let buf: [UInt8] = Array("hey".utf8)
-        #expect(prefix + buf == addPrefix(codec: .p2p, bytes: buf))
+        #expect(prefix + buf == Codecs.p2p.prefixing(buf))
+    }
+
+    @Test func testMulticodecPrefix() throws {
+        let prefixedBuf = "hey".encodeUTF8(as: .p2p)
+        #expect(try prefixedBuf.multicodecPrefix() == Codecs.p2p.code)
+
+        //Unlike `multiCodec()`, the raw prefix is readable even when no known codec goes by it
+        let unknown = UInt64(0xffee).varIntBytes.bytes + Array("hey".utf8)
+        #expect(try unknown.multicodecPrefix() == 0xffee)
     }
 
     // MARK: - Single Pass Decoding
 
     @Test func testDecodePrefixedReturnsCodecAndPayloadSlice() throws {
         let buf: [UInt8] = Array("hey".utf8)
-        let prefixedBuf = addPrefix(codec: .dag_cbor, bytes: buf)
+        let prefixedBuf = Codecs.dag_cbor.prefixing(buf)
 
         let (codec, payload) = try Codecs.decode(prefixed: prefixedBuf)
         #expect(codec == Codecs.dag_cbor)
@@ -166,10 +192,9 @@ struct MulticodecTests {
     @Test func testDecodingFromData() throws {
         let prefixedData = Data("hey".encodeUTF8(as: .dag_cbor))
 
-        #expect(try getCodec(bytes: prefixedData) == "dag-cbor")
-        #expect(try getCodecEnum(bytes: prefixedData) == Codecs.dag_cbor)
-        #expect(try extractPrefix(bytes: prefixedData) == Codecs.dag_cbor.rawValue)
-        #expect(try Codecs(prefixedData) == Codecs.dag_cbor)
+        #expect(try prefixedData.multiCodec().codec == Codecs.dag_cbor)
+        #expect(try prefixedData.multicodecPrefix() == Codecs.dag_cbor.rawValue)
+        #expect(try Codecs(varInt: prefixedData) == Codecs.dag_cbor)
         #expect(try prefixedData.decodeMultiCodec(using: .utf8).contents == "hey")
 
         let (codec, payload) = try prefixedData.multiCodec()
@@ -181,23 +206,22 @@ struct MulticodecTests {
         let framed = [0xff] + "hey".encodeUTF8(as: .dag_cbor) + [0xff]
         let prefixedSlice = framed[1..<(framed.count - 1)]
 
-        #expect(try getCodec(bytes: prefixedSlice) == "dag-cbor")
-        #expect(Array(try removePrefix(bytes: prefixedSlice)) == Array("hey".utf8))
-        #expect(try prefixedSlice.extractCodec().codec == Codecs.dag_cbor)
+        #expect(try prefixedSlice.multiCodec().codec == Codecs.dag_cbor)
+        #expect(Array(try prefixedSlice.strippingMulticodecPrefix()) == Array("hey".utf8))
     }
 
     /// The prefix bytes are themselves a byte collection, so they decode too
     @Test func testDecodingFromVarIntBytes() throws {
-        #expect(try Codecs(Codecs.p2p.asVarInt) == Codecs.p2p)
-        #expect(try getCodecEnum(bytes: Codecs.p2p.asVarInt) == Codecs.p2p)
+        #expect(try Codecs(varInt: Codecs.p2p.asVarInt) == Codecs.p2p)
+        #expect(try Codecs.p2p.asVarInt.multiCodec().codec == Codecs.p2p)
     }
 
     /// Int instantiation time is roughly equal between the enum and dictionary (0.00025s) ...
     //    func testEnumCodecsIntInstantiationPerformance() throws {
     //        measure {
-    //            XCTAssertTrue(try! Codecs(144) == "eth-block")
-    //            XCTAssertTrue(try! Codecs(112) == "dag-pb")
-    //            XCTAssertTrue(try! Codecs(0xb201) == "blake2b-8")
+    //            XCTAssertTrue(try! Codecs(code: 144) == "eth-block")
+    //            XCTAssertTrue(try! Codecs(code: 112) == "dag-pb")
+    //            XCTAssertTrue(try! Codecs(code: 0xb201) == "blake2b-8")
     //        }
     //    }
     //    func testDictionaryCodecsIntInstantiationPerformance() throws {
@@ -211,9 +235,9 @@ struct MulticodecTests {
     /// 0.000958s ( the Enum is 20 times slower than the dictionary when instantiating from string )
     //    func testEnumCodecsStringInstantiationPerformance() throws {
     //        measure {
-    //            XCTAssertTrue(try! Codecs("eth-block") == 144)
-    //            XCTAssertTrue(try! Codecs("dag-pb") == 112)
-    //            XCTAssertTrue(try! Codecs("blake2b-8") == 0xb201)
+    //            XCTAssertTrue(try! Codecs(name: "eth-block") == 144)
+    //            XCTAssertTrue(try! Codecs(name: "dag-pb") == 112)
+    //            XCTAssertTrue(try! Codecs(name: "blake2b-8") == 0xb201)
     //        }
     //    }
 
@@ -233,15 +257,15 @@ struct MulticodecTests {
         let buf: [UInt8] = Array("hey".utf8)  //Test buffer string
         let prefixedBuf = code + buf  //A p2p buffer
 
-        #expect(try getCodec(bytes: prefixedBuf) == Codecs.p2p.name)
+        #expect(try prefixedBuf.multiCodec().codec == Codecs.p2p)
     }
 
     @Test func testP2P() throws {
-        #expect(try Codecs(0x01a5).name == "p2p")
+        #expect(try Codecs(code: 0x01a5).name == "p2p")
     }
 
     @Test func testIPFS() throws {
-        #expect(try Codecs(0xe3).name == "ipfs")
+        #expect(try Codecs(code: 0xe3).name == "ipfs")
     }
 
     @Test func testP2PIPFSInEquality() throws {
@@ -253,7 +277,7 @@ struct MulticodecTests {
     /// throws error on unknown codec name when getting the code
     @Test func testStringInstantiationWithUnknownCodecName() throws {
         #expect(throws: MultiCodecError.unknownCodecString) {
-            try Codecs("this-codec-doesnt-exist")
+            try Codecs(name: "this-codec-doesnt-exist")
         }
     }
 
@@ -266,14 +290,13 @@ struct MulticodecTests {
 
         //Ensure it throws the unknownCodecId Error...
         #expect(throws: MultiCodecError.unknownCodecId) {
-            try getCodec(bytes: prefixedBuf)
+            try prefixedBuf.multiCodec()
         }
     }
 
     @Test func testPrefixBufferWithUnknownCodec() throws {
-        let buf: [UInt8] = Array("hey".utf8)
         #expect(throws: MultiCodecError.unknownCodecId) {
-            try addPrefix(code: 0xffee, bytes: buf)
+            try Codecs(code: 0xffee)
         }
     }
 
@@ -281,7 +304,7 @@ struct MulticodecTests {
     /// throws instead of silently resolving to the `identity` (0x00) codec.
     @Test func testCodecFromEmptyBytesThrows() throws {
         #expect(throws: MultiCodecError.unknownCodecId) {
-            try Codecs([UInt8]())
+            try Codecs(varInt: [UInt8]())
         }
     }
 
@@ -289,30 +312,36 @@ struct MulticodecTests {
     /// layer; ensure it throws rather than resolving to `identity`.
     @Test func testCodecFromTruncatedVarIntThrows() throws {
         #expect(throws: MultiCodecError.unknownCodecId) {
-            try Codecs([0x80] as [UInt8])
+            try Codecs(varInt: [0x80] as [UInt8])
         }
     }
 
     /// A valid single-byte `identity` prefix (0x00) must still decode successfully.
     @Test func testCodecFromIdentityBytesSucceeds() throws {
-        #expect(try Codecs([0x00] as [UInt8]) == Codecs.identity)
+        #expect(try Codecs(varInt: [0x00] as [UInt8]) == Codecs.identity)
     }
 
     @Test func testNegativeCodeInstantiationThrows() throws {
         #expect(throws: MultiCodecError.unknownCodecId) {
-            try Codecs(-1)
+            try Codecs(code: -1)
         }
         #expect(throws: MultiCodecError.unknownCodecId) {
-            try Codecs(Int64.min)
+            try Codecs(code: Int64.min)
         }
-        #expect(throws: MultiCodecError.unknownCodecId) {
-            try addPrefix(code: -1, bytes: Array("hey".utf8))
+    }
+
+    @Test func testStrippingPrefixFromTruncatedBufferThrows() throws {
+        #expect(throws: MultiCodecError.prefixExtractionBufferTooSmall) {
+            try [UInt8]().strippingMulticodecPrefix()
+        }
+        #expect(throws: MultiCodecError.prefixExtractionBufferTooSmall) {
+            try ([0x80] as [UInt8]).multicodecPrefix()
         }
     }
 
     @Test func testDecodeMulticodecWithInvalidStringEncodingThrows() throws {
         //A valid protobuf prefix followed by an invalid UTF8 sequence
-        let prefixedBuf = addPrefix(codec: .protobuf, bytes: [0xc3, 0x28])
+        let prefixedBuf = Codecs.protobuf.prefixing([0xc3, 0x28] as [UInt8])
 
         #expect(throws: MultiCodecError.invalidStringEncoding(.utf8)) {
             try prefixedBuf.decodeMultiCodec(using: .utf8)
@@ -326,7 +355,7 @@ struct MulticodecTests {
 
     @Test func testCodecDetails() throws {
         #expect(Codecs.dag_cbor.details == "MerkleDAG cbor")
-        #expect(try Codecs(113).details == "MerkleDAG cbor")
+        #expect(try Codecs(code: 113).details == "MerkleDAG cbor")
         #expect(Codecs.dag_cbor.tag == "ipld")
     }
 }
