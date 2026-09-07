@@ -55,7 +55,7 @@ let (codec, payload) = try Codecs.decode(prefixed: prefixedProtobuf)
 // codec = Codecs.protobuf, payload = [0x68, 0x65, ...]
 
 // Any collection of bytes works, including Data and slices of larger buffers
-let (_, contents) = try Data(prefixedProtobuf).decodeMultiCodec(using: .utf8)
+let (_, contents) = try Data(prefixedProtobuf).decodeMulticodec(using: .utf8)
 // contents = "hello"
 
 // Or just drop the prefix, leaving a slice of the payload behind
@@ -73,6 +73,30 @@ print(try Codecs(varInt: prefixedProtobuf).name) // protobuf
 // To get the codec table's description of a codec (e.g. for error messages):
 print(try Codecs(code: 113).details) // Optional("MerkleDAG cbor")
 ```
+
+### Tags and Status
+
+Every codec carries the table's own category and designation, so you don't have to maintain
+a list of, say, every multiaddr protocol and keep it in sync by hand.
+
+```swift
+// Codecs are categorized by tag
+print(Codecs.tcp.tag == .multiaddr) // true
+print(Codecs.dag_cbor.tag == .ipld) // true
+
+// And a whole category can be pulled out at once
+let protocols = Codecs.codecs(tagged: .multiaddr)
+
+// The table's designation reports the status of each codec
+print(Codecs.dag_pb.status)          // permanent
+print(Codecs.p2p_webrtc_star.status) // deprecated
+
+// You can filter out deprecated codecs like so...
+let writable = Codecs.codecs(tagged: .multiaddr).filter { $0.status != .deprecated }
+```
+
+Deprecated codecs are deliberately kept. Buffers written against them still exist and have to
+stay decodable.
 
 ### API
 
