@@ -19,13 +19,13 @@ import VarInt
 
 extension Codecs {
 
-    /// Decodes the MultiCodec prefix at the front of `bytes`, along with the payload that follows it.
+    /// Decodes the Multicodec prefix at the front of `bytes`, along with the payload that follows it.
     ///
     /// ```swift
     /// let (codec, payload) = try Codecs.decode(prefixed: buffer)
     /// ```
     ///
-    /// - Parameter bytes: a MultiCodec prefixed byte buffer
+    /// - Parameter bytes: a Multicodec prefixed byte buffer
     /// - Returns: the Codec the buffer is prefixed with, and everything after the prefix
     /// - Throws: `prefixExtractionBufferTooSmall` if the buffer ended before the
     ///   prefix was complete, `prefixExtractionValueOverflow` if the prefix
@@ -35,7 +35,7 @@ extension Codecs {
         prefixed bytes: Bytes
     ) throws -> (codec: Codecs, payload: Bytes.SubSequence) {
         let (value, end) = try decodeVarIntPrefix(bytes)
-        guard let codec = Codecs(rawValue: value) else { throw MultiCodecError.unknownCodecId }
+        guard let codec = Codecs(rawValue: value) else { throw MulticodecError.unknownCodecId }
         return (codec: codec, payload: bytes[end...])
     }
 }
@@ -63,7 +63,7 @@ extension Codecs {
 }
 
 extension String {
-    /// Encodes a String into it's UTF8 Byte Array with the specified MultiCodec prefix
+    /// Encodes a String into it's UTF8 Byte Array with the specified Multicodec prefix
     public func encodeUTF8(as codec: Codecs) -> [UInt8] {
         codec.prefixing(self.utf8)
     }
@@ -77,12 +77,12 @@ extension Collection<UInt8> {
     ///
     /// - Returns: the codec, and a slice of this buffer without the prefix
     /// - Throws: see `Codecs.decode(prefixed:)`
-    public func multiCodec() throws -> (codec: Codecs, bytes: SubSequence) {
+    public func multicodec() throws -> (codec: Codecs, bytes: SubSequence) {
         let (codec, payload) = try Codecs.decode(prefixed: self)
         return (codec: codec, bytes: payload)
     }
 
-    /// The MultiCodec prefix at the front of this buffer, whether or not a known codec goes by it
+    /// The Multicodec prefix at the front of this buffer, whether or not a known codec goes by it
     ///
     /// - Returns: the prefix value of this buffer
     /// - Throws: `prefixExtractionBufferTooSmall` if the buffer ended before the prefix
@@ -92,7 +92,7 @@ extension Collection<UInt8> {
         try decodeVarIntPrefix(self).value
     }
 
-    /// This buffer without it's MultiCodec prefix
+    /// This buffer without it's Multicodec prefix
     ///
     /// - Returns: a slice of this buffer without the prefix
     /// - Throws: `prefixExtractionBufferTooSmall` if the buffer ended before the prefix
@@ -108,10 +108,10 @@ extension Collection<UInt8> {
     /// - Parameter encoding: the encoding to decode the contents with
     /// - Throws: `invalidStringEncoding` if the contents aren't valid in the given
     ///   encoding, otherwise see `Codecs.decode(prefixed:)`
-    public func decodeMultiCodec(using encoding: String.Encoding) throws -> (codec: Codecs, contents: String) {
+    public func decodeMulticodec(using encoding: String.Encoding) throws -> (codec: Codecs, contents: String) {
         let (codec, payload) = try Codecs.decode(prefixed: self)
         guard let str = String(bytes: payload, encoding: encoding) else {
-            throw MultiCodecError.invalidStringEncoding(encoding)
+            throw MulticodecError.invalidStringEncoding(encoding)
         }
         return (codec: codec, contents: str)
     }
@@ -119,7 +119,7 @@ extension Collection<UInt8> {
 
 // MARK: - Internal
 
-/// Decodes the VarInt at the front of `bytes`, reporting failures as `MultiCodecError`.
+/// Decodes the VarInt at the front of `bytes`, reporting failures as `MulticodecError`.
 ///
 /// - Returns: the decoded prefix, and the index of the first byte after it.
 internal func decodeVarIntPrefix<Bytes: Collection<UInt8>>(
@@ -129,9 +129,9 @@ internal func decodeVarIntPrefix<Bytes: Collection<UInt8>>(
         return try VarInt.decode(bytes)
     } catch VarIntError.needsMoreBytes {
         // The buffer was empty, or ended part way through the prefix
-        throw MultiCodecError.prefixExtractionBufferTooSmall
+        throw MulticodecError.prefixExtractionBufferTooSmall
     } catch {
         // The prefix didn't fit in 64 bits, or wasn't minimally encoded
-        throw MultiCodecError.prefixExtractionValueOverflow
+        throw MulticodecError.prefixExtractionValueOverflow
     }
 }
