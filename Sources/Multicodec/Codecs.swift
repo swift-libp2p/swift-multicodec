@@ -29,9 +29,9 @@ import VarInt
 /// ```
 ///
 /// - Warning: Not every entry in the table is settled. Check `status` before writing a Codec
-///   into a new buffer: a `draft` Codec's code can still change, and a `deprecated` one has a
-///   replacement. Every Codec remains decodable either way, which is why the deprecated ones
-///   are still listed here.
+///   into a new buffer: a `draft` Codec's code can still change, and a `deprecated` one might
+///   have a replacement. Every Codec remains decodable either way, which is why the deprecated
+///   ones are still made available.
 public enum Codecs: UInt64, CaseIterable, Equatable, Sendable {
     case identity                        = 0x00
 	case cidv1                           = 0x01
@@ -720,9 +720,6 @@ public enum Codecs: UInt64, CaseIterable, Equatable, Sendable {
     public static var codecCodes: [UInt64] { return Codecs.allCases.map { $0.rawValue } }
     
     /// Returns the code for this Codec
-    ///
-    /// - Note: This is the same number as `rawValue`. `code` is the spelling the multicodec
-    ///   spec uses, and reads better at a call site, but the two are interchangeable.
     public var code: UInt64 {
         return self.rawValue
     }
