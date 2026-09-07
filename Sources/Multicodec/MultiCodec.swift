@@ -59,8 +59,8 @@ public func getPrefix(multiCodec: Codecs) -> VarIntBytes {
 ///   - bytes: the byte buffer to prefix
 /// - Returns: the prefixed byte buffer
 /// - Throws: `unknownCodecString` if given an invalid multicodec name
-public func addPrefix(multiCodec: String, bytes: [UInt8]) throws -> [UInt8] {
-    try getPrefix(multiCodec: multiCodec) + bytes
+public func addPrefix(multiCodec: String, bytes: some Collection<UInt8>) throws -> [UInt8] {
+    addPrefix(codec: try Codecs(multiCodec), bytes: bytes)
 }
 
 /// Add multicodec prefix to the front of the given byte buffer
@@ -70,8 +70,8 @@ public func addPrefix(multiCodec: String, bytes: [UInt8]) throws -> [UInt8] {
 ///   - bytes: the byte buffer to prefix
 /// - Returns: the prefixed byte buffer
 /// - Throws: `unknownCodecId` if given a code that doesn't match a known multicodec
-public func addPrefix(code: Int64, bytes: [UInt8]) throws -> [UInt8] {
-    try getPrefix(multiCodec: try Codecs(code).name) + bytes
+public func addPrefix(code: Int64, bytes: some Collection<UInt8>) throws -> [UInt8] {
+    addPrefix(codec: try Codecs(code), bytes: bytes)
 }
 
 /// Add multicodec prefix to the front of the given byte buffer
@@ -81,8 +81,8 @@ public func addPrefix(code: Int64, bytes: [UInt8]) throws -> [UInt8] {
 ///   - bytes: the byte buffer to prefix
 /// - Returns: the prefixed byte buffer
 /// - Throws: `unknownCodecId` if given a code that doesn't match a known multicodec
-public func addPrefix(code: UInt64, bytes: [UInt8]) throws -> [UInt8] {
-    try getPrefix(multiCodec: try Codecs(code).name) + bytes
+public func addPrefix(code: UInt64, bytes: some Collection<UInt8>) throws -> [UInt8] {
+    addPrefix(codec: try Codecs(code), bytes: bytes)
 }
 
 /// Add multicodec prefix to the front of the given byte buffer
@@ -92,8 +92,8 @@ public func addPrefix(code: UInt64, bytes: [UInt8]) throws -> [UInt8] {
 ///   - bytes: the byte buffer to prefix
 /// - Returns: the prefixed byte buffer
 /// - Throws: `unknownCodecId` if given a code that doesn't match a known multicodec
-public func addPrefix(code: Int, bytes: [UInt8]) throws -> [UInt8] {
-    try getPrefix(multiCodec: try Codecs(code).name) + bytes
+public func addPrefix(code: Int, bytes: some Collection<UInt8>) throws -> [UInt8] {
+    addPrefix(codec: try Codecs(code), bytes: bytes)
 }
 
 /// Add multicodec prefix to the front of the given byte buffer
@@ -102,8 +102,13 @@ public func addPrefix(code: Int, bytes: [UInt8]) throws -> [UInt8] {
 ///   - codec: the  Codec Enum of the multicodec to use for prefixing (ex: Codecs.p2p)
 ///   - bytes: the byte buffer to prefix
 /// - Returns: the prefixed byte buffer
-public func addPrefix(codec: Codecs, bytes: [UInt8]) -> [UInt8] {
-    getPrefix(multiCodec: codec) + bytes
+public func addPrefix(codec: Codecs, bytes: some Collection<UInt8>) -> [UInt8] {
+    let prefix = codec.asVarInt
+    var prefixed = [UInt8]()
+    prefixed.reserveCapacity(prefix.count + bytes.count)
+    prefixed.append(contentsOf: prefix)
+    prefixed.append(contentsOf: bytes)
+    return prefixed
 }
 
 /// Remove the prefix from a prefixed byte buffer
