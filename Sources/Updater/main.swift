@@ -66,7 +66,7 @@ let HEADER = """
     """
 
 let ENUM_DEFINITION_TEMPLATE = """
-    {{+enum_scope+}} enum {{+enum_title+}}{{+enum_rawType+}}{{+enum_protocols+}} {
+    {{+enum_scope+}} enum {{+enum_title+}} {{+enum_rawType+}}{{+enum_protocols+}} {
         {{+enum_cases+}}
         {{+enum_additional_components+}}
         {{+enum_computed_properties+}}
@@ -79,7 +79,7 @@ let ENUM_CASE = """
     """
 
 let ENUM_COMPUTED_PROPERTY = """
-    {{+enum_scope+}} var {{+cp_title+}}:{{+cp_type+}} {
+    {{+enum_scope+}} var {{+cp_title+}}: {{+cp_type+}} {
         switch self {
         {{+cp_case+}}
         {{+cp_default+}}
@@ -100,55 +100,55 @@ let ENUM_ADDITIONAL_COMPONENTS = """
         ///  print(p2p.code)        //"0x01a5"
         ///  print(p2p.name)        //"p2p"
         ///  print(p2p.tag)         //"multihash"
-        ///  print(p2p.description) //"libp2p"
+        ///  print(p2p.details)     //Optional("libp2p")
         /// ```
         /// - Note: The string name is lowercased and replaces dashes (-) for underscores (_) before checking for a match...
-        {{+enum_scope+}} init(_ name:String) throws {
+        {{+enum_scope+}} init(_ name: String) throws {
             let n = name.replacingOccurrences(of: "-", with: "_").lowercased()
-            guard let match = Codecs.allCases.first(where: { "\\($0)" == n }) else { throw MulticodecError.UnknownCodecString }
+            guard let match = Codecs.allCases.first(where: { "\\($0)" == n }) else { throw MultiCodecError.unknownCodecString }
             self = match
         }
 
         /// Instantiation via unsigned VarInt
-        {{+enum_scope+}} init(_ bytes:[UInt8]) throws {
-            guard let value = try? VarInt.decode(bytes).value, let s = Codecs(rawValue: value) else { throw MulticodecError.UnknownCodecId }
+        {{+enum_scope+}} init(_ bytes: [UInt8]) throws {
+            guard let value = try? VarInt.decode(bytes).value, let s = Codecs(rawValue: value) else { throw MultiCodecError.unknownCodecId }
             self = s
         }
         
-        {{+enum_scope+}} init(_ code:Int) throws {
-            guard let s = Codecs(rawValue: UInt64(code)) else { throw MulticodecError.UnknownCodecId }
+        {{+enum_scope+}} init(_ code: Int) throws {
+            guard let raw = UInt64(exactly: code), let s = Codecs(rawValue: raw) else { throw MultiCodecError.unknownCodecId }
             self = s
         }
         
-        {{+enum_scope+}} init(_ code:Int64) throws {
-            guard let s = Codecs(rawValue: UInt64(code)) else { throw MulticodecError.UnknownCodecId }
+        {{+enum_scope+}} init(_ code: Int64) throws {
+            guard let raw = UInt64(exactly: code), let s = Codecs(rawValue: raw) else { throw MultiCodecError.unknownCodecId }
             self = s
         }
         
-        {{+enum_scope+}} init(_ code:UInt64) throws {
-            guard let s = Codecs(rawValue: code) else { throw MulticodecError.UnknownCodecId }
+        {{+enum_scope+}} init(_ code: UInt64) throws {
+            guard let s = Codecs(rawValue: code) else { throw MultiCodecError.unknownCodecId }
             self = s
         }
 
         /// Returns a list of all known Codec names
-        {{+enum_scope+}} static var codecNames:[String] { return Codecs.allCases.map { $0.name } }
+        {{+enum_scope+}} static var codecNames: [String] { return Codecs.allCases.map { $0.name } }
 
         /// Returns a list of Codecs that have the specified tag (ex: 'multiaddr' or 'multihash')
-        {{+enum_scope+}} static func codecs(withTag _tag:String) -> [Codecs] { return Codecs.allCases.filter( { $0.tag == _tag }) }
+        {{+enum_scope+}} static func codecs(withTag _tag: String) -> [Codecs] { return Codecs.allCases.filter( { $0.tag == _tag }) }
 
         /// Returns a list of all known Codec codes
-        {{+enum_scope+}} static var codecCodes:[UInt64] { return Codecs.allCases.map { $0.rawValue } }
+        {{+enum_scope+}} static var codecCodes: [UInt64] { return Codecs.allCases.map { $0.rawValue } }
         
         /// Returns the code for this Codec
-        {{+enum_scope+}} var code:UInt64 {
+        {{+enum_scope+}} var code: UInt64 {
             return self.rawValue
         }
         
         /// Returns the name for this Codec
-        {{+enum_scope+}} var name:String { return "\\(self)".replacingOccurrences(of: "_", with: "-") }
+        {{+enum_scope+}} var name: String { return "\\(self)".replacingOccurrences(of: "_", with: "-") }
         
         /// Returns the code for this Codec as a VarInt Byte Buffer
-        {{+enum_scope+}} var asVarInt:[UInt8] { return self.rawValue.varIntBytes.bytes }
+        {{+enum_scope+}} var asVarInt: VarIntBytes { return self.rawValue.varIntBytes }
     """
 
 // MARK: - Network Data Fetch
@@ -439,8 +439,11 @@ guard !enumCases.isEmpty else {
 
 /// Generate the necessary computed properties to match the table
 let compPropTag = ComputedProperty(title: "tag", type: String.self, defaultValue: "", caseKey: "tag")
+/// The generated property is named `details` rather than `description`, both because
+/// it's optional and to leave `description` free for `CustomStringConvertible`.
+/// `caseKey` still points at the table's 'description' column.
 let compPropDes = ComputedProperty(
-    title: "description",
+    title: "details",
     type: Optional<String>.self,
     defaultValue: "nil",
     caseKey: "description"

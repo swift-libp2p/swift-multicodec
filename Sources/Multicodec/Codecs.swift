@@ -29,7 +29,7 @@ import VarInt
 /// ```
 /// swift run update-codecs
 /// ```
-public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
+public enum Codecs: UInt64, CaseIterable, Equatable, Sendable {
     case identity                        = 0x00
 	case cidv1                           = 0x01
 	case cidv2                           = 0x02
@@ -689,57 +689,57 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
     ///  print(p2p.code)        //"0x01a5"
     ///  print(p2p.name)        //"p2p"
     ///  print(p2p.tag)         //"multihash"
-    ///  print(p2p.description) //"libp2p"
+    ///  print(p2p.details)     //Optional("libp2p")
     /// ```
     /// - Note: The string name is lowercased and replaces dashes (-) for underscores (_) before checking for a match...
-    public init(_ name:String) throws {
+    public init(_ name: String) throws {
         let n = name.replacingOccurrences(of: "-", with: "_").lowercased()
-        guard let match = Codecs.allCases.first(where: { "\($0)" == n }) else { throw MulticodecError.UnknownCodecString }
+        guard let match = Codecs.allCases.first(where: { "\($0)" == n }) else { throw MultiCodecError.unknownCodecString }
         self = match
     }
 
     /// Instantiation via unsigned VarInt
-    public init(_ bytes:[UInt8]) throws {
-        guard let value = try? VarInt.decode(bytes).value, let s = Codecs(rawValue: value) else { throw MulticodecError.UnknownCodecId }
+    public init(_ bytes: [UInt8]) throws {
+        guard let value = try? VarInt.decode(bytes).value, let s = Codecs(rawValue: value) else { throw MultiCodecError.unknownCodecId }
         self = s
     }
     
-    public init(_ code:Int) throws {
-        guard let s = Codecs(rawValue: UInt64(code)) else { throw MulticodecError.UnknownCodecId }
+    public init(_ code: Int) throws {
+        guard let raw = UInt64(exactly: code), let s = Codecs(rawValue: raw) else { throw MultiCodecError.unknownCodecId }
         self = s
     }
     
-    public init(_ code:Int64) throws {
-        guard let s = Codecs(rawValue: UInt64(code)) else { throw MulticodecError.UnknownCodecId }
+    public init(_ code: Int64) throws {
+        guard let raw = UInt64(exactly: code), let s = Codecs(rawValue: raw) else { throw MultiCodecError.unknownCodecId }
         self = s
     }
     
-    public init(_ code:UInt64) throws {
-        guard let s = Codecs(rawValue: code) else { throw MulticodecError.UnknownCodecId }
+    public init(_ code: UInt64) throws {
+        guard let s = Codecs(rawValue: code) else { throw MultiCodecError.unknownCodecId }
         self = s
     }
 
     /// Returns a list of all known Codec names
-    public static var codecNames:[String] { return Codecs.allCases.map { $0.name } }
+    public static var codecNames: [String] { return Codecs.allCases.map { $0.name } }
 
     /// Returns a list of Codecs that have the specified tag (ex: 'multiaddr' or 'multihash')
-    public static func codecs(withTag _tag:String) -> [Codecs] { return Codecs.allCases.filter( { $0.tag == _tag }) }
+    public static func codecs(withTag _tag: String) -> [Codecs] { return Codecs.allCases.filter( { $0.tag == _tag }) }
 
     /// Returns a list of all known Codec codes
-    public static var codecCodes:[UInt64] { return Codecs.allCases.map { $0.rawValue } }
+    public static var codecCodes: [UInt64] { return Codecs.allCases.map { $0.rawValue } }
     
     /// Returns the code for this Codec
-    public var code:UInt64 {
+    public var code: UInt64 {
         return self.rawValue
     }
     
     /// Returns the name for this Codec
-    public var name:String { return "\(self)".replacingOccurrences(of: "_", with: "-") }
+    public var name: String { return "\(self)".replacingOccurrences(of: "_", with: "-") }
     
     /// Returns the code for this Codec as a VarInt Byte Buffer
-    public var asVarInt:[UInt8] { return self.rawValue.varIntBytes.bytes }
+    public var asVarInt: VarIntBytes { return self.rawValue.varIntBytes }
     
-	public var tag:String {
+	public var tag: String {
 	    switch self {
 	    case .identity:
 		    return "multihash"
@@ -2047,7 +2047,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 	    }
 	}
 
-	public var description:String? {
+	public var details: String? {
 	    switch self {
 	    case .identity:
 		    return "raw binary"
