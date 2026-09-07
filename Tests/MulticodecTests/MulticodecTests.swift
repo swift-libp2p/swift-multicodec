@@ -12,10 +12,9 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Multicodec
 import Testing
 import VarInt
-
-@testable import Multicodec
 
 @Suite("Multicodec Tests")
 struct MulticodecTests {
@@ -86,7 +85,7 @@ struct MulticodecTests {
     @Test func testEncodeDecodeBuffer3() throws {
         let prefixedBuf = "hey".encodeUTF8(as: .eth_block)
         #expect(try getCodec(bytes: prefixedBuf) == "eth-block")
-        let decoded = try prefixedBuf.decodeMulticodec(using: .utf8)
+        let decoded = try prefixedBuf.decodeMultiCodec(using: .utf8)
         #expect(decoded.codec == "eth-block")
         #expect(decoded.codec == Codecs.eth_block)
         #expect(decoded.contents == "hey")
@@ -121,6 +120,17 @@ struct MulticodecTests {
 
     @Test func testVarIntRoundTrip() throws {
         #expect(try UInt64(varInt: Codecs.keccak_256.rawValue.varIntBytes) == 0x1b)
+    }
+
+    @Test func testPrefixIsVarIntBytes() throws {
+        let prefix: VarIntBytes = getPrefix(multiCodec: .p2p)
+        #expect(Array(prefix) == [0xa5, 0x03])
+        #expect(prefix == Codecs.p2p.asVarInt)
+        #expect(try getPrefix(multiCodec: "p2p") == prefix)
+
+        //VarIntBytes is a collection, so it concatenates with a byte buffer directly
+        let buf: [UInt8] = Array("hey".utf8)
+        #expect(prefix + buf == addPrefix(codec: .p2p, bytes: buf))
     }
 
     /// Int instantiation time is roughly equal between the enum and dictionary (0.00025s) ...
@@ -183,7 +193,7 @@ struct MulticodecTests {
 
     /// throws error on unknown codec name when getting the code
     @Test func testStringInstantiationWithUnknownCodecName() throws {
-        #expect(throws: MulticodecError.UnknownCodecString) {
+        #expect(throws: MultiCodecError.unknownCodecString) {
             try Codecs("this-codec-doesnt-exist")
         }
     }
@@ -195,15 +205,15 @@ struct MulticodecTests {
         let buf: [UInt8] = Array("hey".utf8)
         let prefixedBuf = code + buf
 
-        //Ensure it throws the UnknownCodecId Error...
-        #expect(throws: MulticodecError.UnknownCodecId) {
+        //Ensure it throws the unknownCodecId Error...
+        #expect(throws: MultiCodecError.unknownCodecId) {
             try getCodec(bytes: prefixedBuf)
         }
     }
 
     @Test func testPrefixBufferWithUnknownCodec() throws {
         let buf: [UInt8] = Array("hey".utf8)
-        #expect(throws: MulticodecError.UnknownCodecId) {
+        #expect(throws: MultiCodecError.unknownCodecId) {
             try addPrefix(code: 0xffee, bytes: buf)
         }
     }
@@ -211,7 +221,7 @@ struct MulticodecTests {
     /// An empty buffer throws `needsMoreBytes` at the VarInt layer; ensure it
     /// throws instead of silently resolving to the `identity` (0x00) codec.
     @Test func testCodecFromEmptyBytesThrows() throws {
-        #expect(throws: MulticodecError.UnknownCodecId) {
+        #expect(throws: MultiCodecError.unknownCodecId) {
             try Codecs([UInt8]())
         }
     }
@@ -219,7 +229,7 @@ struct MulticodecTests {
     /// A truncated VarInt (a lone continuation byte) also throws at the VarInt
     /// layer; ensure it throws rather than resolving to `identity`.
     @Test func testCodecFromTruncatedVarIntThrows() throws {
-        #expect(throws: MulticodecError.UnknownCodecId) {
+        #expect(throws: MultiCodecError.unknownCodecId) {
             try Codecs([0x80] as [UInt8])
         }
     }
@@ -227,5 +237,37 @@ struct MulticodecTests {
     /// A valid single-byte `identity` prefix (0x00) must still decode successfully.
     @Test func testCodecFromIdentityBytesSucceeds() throws {
         #expect(try Codecs([0x00] as [UInt8]) == Codecs.identity)
+    }
+
+    @Test func testNegativeCodeInstantiationThrows() throws {
+        #expect(throws: MultiCodecError.unknownCodecId) {
+            try Codecs(-1)
+        }
+        #expect(throws: MultiCodecError.unknownCodecId) {
+            try Codecs(Int64.min)
+        }
+        #expect(throws: MultiCodecError.unknownCodecId) {
+            try addPrefix(code: -1, bytes: Array("hey".utf8))
+        }
+    }
+
+    @Test func testDecodeMulticodecWithInvalidStringEncodingThrows() throws {
+        //A valid protobuf prefix followed by an invalid UTF8 sequence
+        let prefixedBuf = addPrefix(codec: .protobuf, bytes: [0xc3, 0x28])
+
+        #expect(throws: MultiCodecError.invalidStringEncoding(.utf8)) {
+            try prefixedBuf.decodeMultiCodec(using: .utf8)
+        }
+    }
+
+    @Test func testErrorDescription() throws {
+        #expect("\(MultiCodecError.unknownCodecId)" == "no known codec goes by that code")
+        #expect("\(MultiCodecError.invalidStringEncoding(.utf8))".contains("\(String.Encoding.utf8.rawValue)"))
+    }
+
+    @Test func testCodecDetails() throws {
+        #expect(Codecs.dag_cbor.details == "MerkleDAG cbor")
+        #expect(try Codecs(113).details == "MerkleDAG cbor")
+        #expect(Codecs.dag_cbor.tag == "ipld")
     }
 }
