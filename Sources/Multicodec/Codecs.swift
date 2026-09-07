@@ -14,7 +14,7 @@
 //===----------------------------------------------------------------------===//
 //
 // This file was generated automatically (do NOT modify this file)
-// Updated on 8/4/26
+// Updated on 9/6/26
 
 import Foundation
 import VarInt
@@ -190,6 +190,7 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 	case sha2_512_224                    = 0x1014
 	case sha2_512_256                    = 0x1015
 	case murmur3_x64_128                 = 0x1022
+	case grid_cbor                       = 0x1027
 	case ripemd_128                      = 0x1052
 	case ripemd_160                      = 0x1053
 	case ripemd_256                      = 0x1054
@@ -1060,6 +1061,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 		    return "multihash"
 		case .murmur3_x64_128:
 		    return "hash"
+		case .grid_cbor:
+		    return "ipld"
 		case .ripemd_128:
 		    return "multihash"
 		case .ripemd_160:
@@ -2268,6 +2271,8 @@ public enum Codecs:UInt64, CaseIterable, Equatable, Sendable {
 		    return "aka SHA-512/224; as specified by FIPS 180-4."
 		case .sha2_512_256:
 		    return "aka SHA-512/256; as specified by FIPS 180-4."
+		case .grid_cbor:
+		    return "Grid message envelope: RFC-8949 deterministic CBOR; 'grid'-tagged; codec preserves arbitrary tags/keys while allowing traversal of tag-42 CID links; spec: https://github.com/promisegrid/promisegrid/blob/main/docs/grid-cbor-multicodec-spec.md"
 		case .p256_pub:
 		    return "P-256 public key (compressed)"
 		case .p384_pub:
