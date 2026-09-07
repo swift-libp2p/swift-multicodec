@@ -50,6 +50,15 @@ let protobuf: [UInt8] = Array("hello".utf8)
 let prefixedProtobuf = addPrefix(codec: .protobuf, bytes: protobuf)
 // prefixedProtobuf = [0x50, ...]
 
+// The codec and its payload are read in a single pass over the prefix,
+// and the payload is a slice of the buffer rather than a copy of it
+let (codec, payload) = try Codecs.decode(prefixed: prefixedProtobuf)
+// codec = Codecs.protobuf, payload = [0x68, 0x65, ...]
+
+// Any collection of bytes works, including Data and slices of larger buffers
+let (_, contents) = try Data(prefixedProtobuf).decodeMultiCodec(using: .utf8)
+// contents = "hello"
+
 // The multicodec codec values can be accessed directly:
 print(Codecs.dag_cbor.code) // 113
 
