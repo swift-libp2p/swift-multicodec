@@ -37,7 +37,7 @@ let HEADER = """
     //
     // This source file is part of the swift-libp2p open source project
     //
-    // Copyright (c) 2022-2025 swift-libp2p project authors
+    // Copyright (c) 2022-2026 swift-libp2p project authors
     // Licensed under MIT
     //
     // See LICENSE for license information
@@ -66,7 +66,7 @@ let HEADER = """
     """
 
 let ENUM_DEFINITION_TEMPLATE = """
-    {{+enum_scope+}} enum {{+enum_title+}} {{+enum_rawType+}}{{+enum_protocols+}} {
+    {{+enum_scope+}} enum {{+enum_title+}}{{+enum_rawType+}}{{+enum_protocols+}} {
         {{+enum_cases+}}
         {{+enum_additional_components+}}
         {{+enum_computed_properties+}}
@@ -272,7 +272,7 @@ func generateEnum(
     e = e.replacingOccurrences(of: "{{+enum_scope+}}", with: scope.rawValue)
     e = e.replacingOccurrences(of: "{{+enum_title+}}", with: title)  //Enforce CamelCase???
     if let rt = rawType {
-        e = e.replacingOccurrences(of: "{{+enum_rawType+}}", with: ":\(rt.self)")
+        e = e.replacingOccurrences(of: "{{+enum_rawType+}}", with: " :\(rt.self)")
         if !protocolConformances.isEmpty {
             e = e.replacingOccurrences(
                 of: "{{+enum_protocols+}}",
