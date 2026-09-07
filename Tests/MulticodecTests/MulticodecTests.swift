@@ -30,11 +30,6 @@ struct MulticodecTests {
         #expect(Codecs.eth_block.code == 144)
         #expect(Codecs.dag_pb.code == 112)
         #expect(Codecs.blake2b_8.code == 0xb201)
-
-        //Or compare the Codecs code to an int directly
-        #expect(Codecs.eth_block == 144)
-        #expect(Codecs.dag_pb == 112)
-        #expect(Codecs.blake2b_8 == 0xb201)
     }
 
     @Test func testCodecNamesDirect() throws {
@@ -43,12 +38,28 @@ struct MulticodecTests {
         #expect(Codecs.dag_pb.name == "dag-pb")
         #expect(Codecs.udp.name == "udp")
         #expect(Codecs.blake2b_8.name == "blake2b-8")
+    }
 
-        //Or compare the Codecs name to a string directly...
-        #expect(Codecs.eth_block == "eth-block")
-        #expect(Codecs.dag_pb == "dag-pb")
-        #expect(Codecs.udp == "udp")
-        #expect(Codecs.blake2b_8 == "blake2b-8")
+    /// A handful of codecs carry an underscore in their canonical name, which the case
+    /// title can't distinguish from the underscores it substitutes for dashes. The name
+    /// comes from the table verbatim so that these don't come back as `bls12-381-g1-pub`.
+    @Test func testCodecNamesWithUnderscores() throws {
+        #expect(Codecs.bls12_381_g1_pub.name == "bls12_381-g1-pub")
+        #expect(Codecs.bls12_381_g1g2_priv.name == "bls12_381-g1g2-priv")
+        #expect(Codecs.bls12_381_g2_share_msig.name == "bls12_381-g2-share-msig")
+        #expect(Codecs.jwk_jcs_pub.name == "jwk_jcs-pub")
+        #expect(Codecs.poseidon_bls12_381_a2_fc1.name == "poseidon-bls12_381-a2-fc1")
+
+        //And they resolve from that same canonical spelling
+        #expect(try Codecs(name: "bls12_381-g1-pub") == Codecs.bls12_381_g1_pub)
+        #expect(try Codecs(name: "jwk_jcs-pub") == Codecs.jwk_jcs_pub)
+    }
+
+    /// Every codec's name round trips back to the codec it came from
+    @Test func testAllCodecNamesRoundTrip() throws {
+        for codec in Codecs.allCases {
+            #expect(try Codecs(name: codec.name) == codec)
+        }
     }
 
     // MARK: - Labeled Initializers
@@ -69,6 +80,18 @@ struct MulticodecTests {
     @Test func testCodecsStringInstantiation() throws {
         let code = try Codecs(name: "keccak-256")
         #expect(code.rawValue == 0x1b)
+    }
+
+    /// Names are matched exactly first, then leniently
+    @Test func testCodecsStringInstantiationIsLenient() throws {
+        #expect(try Codecs(name: "dag-pb") == Codecs.dag_pb)
+        #expect(try Codecs(name: "dag_pb") == Codecs.dag_pb)
+        #expect(try Codecs(name: "DAG-PB") == Codecs.dag_pb)
+        #expect(try Codecs(name: "Dag_Pb") == Codecs.dag_pb)
+
+        #expect(throws: MulticodecError.unknownCodecString) {
+            try Codecs(name: "dagpb")
+        }
     }
 
     @Test func testCodecsVarIntInstantiation() throws {
@@ -105,8 +128,8 @@ struct MulticodecTests {
         let prefixedBuf = "hey".encodeUTF8(as: .eth_block)
         #expect(try prefixedBuf.multicodec().codec == Codecs.eth_block)
         let decoded = try prefixedBuf.decodeMulticodec(using: .utf8)
-        #expect(decoded.codec == "eth-block")
         #expect(decoded.codec == Codecs.eth_block)
+        #expect(decoded.codec.name == "eth-block")
         #expect(decoded.contents == "hey")
     }
 
@@ -215,40 +238,6 @@ struct MulticodecTests {
         #expect(try Codecs(varInt: Codecs.p2p.asVarInt) == Codecs.p2p)
         #expect(try Codecs.p2p.asVarInt.multicodec().codec == Codecs.p2p)
     }
-
-    /// Int instantiation time is roughly equal between the enum and dictionary (0.00025s) ...
-    //    func testEnumCodecsIntInstantiationPerformance() throws {
-    //        measure {
-    //            XCTAssertTrue(try! Codecs(code: 144) == "eth-block")
-    //            XCTAssertTrue(try! Codecs(code: 112) == "dag-pb")
-    //            XCTAssertTrue(try! Codecs(code: 0xb201) == "blake2b-8")
-    //        }
-    //    }
-    //    func testDictionaryCodecsIntInstantiationPerformance() throws {
-    //        measure {
-    //            XCTAssertTrue(codecs.first(where: {$1 ==   0x90})?.key == "eth-block")
-    //            XCTAssertTrue(codecs.first(where: {$1 ==   0x70})?.key ==    "dag-pb")
-    //            XCTAssertTrue(codecs.first(where: {$1 == 0xb201})?.key == "blake2b-8")
-    //        }
-    //    }
-
-    /// 0.000958s ( the Enum is 20 times slower than the dictionary when instantiating from string )
-    //    func testEnumCodecsStringInstantiationPerformance() throws {
-    //        measure {
-    //            XCTAssertTrue(try! Codecs(name: "eth-block") == 144)
-    //            XCTAssertTrue(try! Codecs(name: "dag-pb") == 112)
-    //            XCTAssertTrue(try! Codecs(name: "blake2b-8") == 0xb201)
-    //        }
-    //    }
-
-    /// 0.0000527
-    //    func testDictionaryCodecsStringInstantiationPerformance() throws {
-    //        measure {
-    //            XCTAssertTrue(codecs["eth-block"] ==    144)
-    //            XCTAssertTrue(codecs["dag-pb"]    ==    112)
-    //            XCTAssertTrue(codecs["blake2b-8"] == 0xb201)
-    //        }
-    //    }
 
     @Test func testP2PCodecClassification() throws {
         //Create our buffer with an unknown codec
