@@ -32,6 +32,13 @@ struct MulticodecTests {
         #expect(Codecs.blake2b_8.code == 0xb201)
     }
 
+    /// `code` and `rawValue` interchangeable now.
+    @Test func testCodeMatchesRawValue() throws {
+        for codec in Codecs.allCases {
+            #expect(codec.code == codec.rawValue)
+        }
+    }
+
     @Test func testCodecNamesDirect() throws {
         //Access a Codecs name via the name property
         #expect(Codecs.eth_block.name == "eth-block")
@@ -351,9 +358,51 @@ struct MulticodecTests {
         #expect("\(MulticodecError.invalidStringEncoding(.utf8))".contains("\(String.Encoding.utf8.rawValue)"))
     }
 
+    // MARK: - Tags & Status
+
+    @Test func testCodecTags() throws {
+        #expect(Codecs.identity.tag == .multihash)
+        #expect(Codecs.dag_cbor.tag == .ipld)
+        #expect(Codecs.tcp.tag == .multiaddr)
+        #expect(Codecs.cidv1.tag == .cid)
+    }
+
+    @Test func testCodecsTaggedGrouping() throws {
+        let protocols = Codecs.codecs(tagged: .multiaddr)
+
+        #expect(protocols.contains(.tcp))
+        #expect(protocols.contains(.udp))
+        #expect(protocols.contains(.quic_v1))
+        #expect(!protocols.contains(.dag_cbor))
+        #expect(protocols.allSatisfy { $0.tag == .multiaddr })
+
+        //The groups partition every tagged Codec, without double counting any of them
+        let grouped = CodecTag.allCases.reduce(0) { $0 + Codecs.codecs(tagged: $1).count }
+        #expect(grouped == Codecs.allCases.filter { $0.tag != nil }.count)
+    }
+
+    @Test func testCodecStatus() throws {
+        #expect(Codecs.identity.status == .permanent)
+        #expect(Codecs.dag_pb.status == .permanent)
+        #expect(Codecs.p2p_webrtc_star.status == .deprecated)
+        #expect(Codecs.nonstandard_sig.status == .deprecated)
+    }
+
+    /// Deprecated codecs stay in the table so that buffers already written against them
+    /// remain decodable. `status` is how a caller finds out.
+    @Test func testDeprecatedCodecsAreStillDecodable() throws {
+        let deprecated = Codecs.allCases.filter { $0.status == .deprecated }
+        #expect(!deprecated.isEmpty)
+
+        for codec in deprecated {
+            #expect(try Codecs(name: codec.name) == codec)
+            #expect(try codec.prefixing(Array("hey".utf8)).multicodec().codec == codec)
+        }
+    }
+
     @Test func testCodecDetails() throws {
         #expect(Codecs.dag_cbor.details == "MerkleDAG cbor")
         #expect(try Codecs(code: 113).details == "MerkleDAG cbor")
-        #expect(Codecs.dag_cbor.tag == "ipld")
+        #expect(Codecs.dag_cbor.tag?.rawValue == "ipld")
     }
 }
