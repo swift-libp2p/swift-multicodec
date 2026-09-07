@@ -12,6 +12,7 @@
 - [Install](#install)
 - [Usage](#usage)
   - [Example](#example)
+  - [Tags and Status](#tags-and-status)
   - [API](#api)
 - [Updating the Codec Values](#updating-the-codec-values)
 - [Contributing](#contributing) 
@@ -47,16 +48,56 @@ let package = Package(
 import Multicodec
 
 let protobuf: [UInt8] = Array("hello".utf8)
-let prefixedProtobuf = addPrefix(codec: .protobuf, bytes: protobuf)
+let prefixedProtobuf = Codecs.protobuf.prefixing(protobuf)
 // prefixedProtobuf = [0x50, ...]
+
+// The payload is a slice of the buffer rather than a copy of it
+let (codec, payload) = try Codecs.decode(prefixed: prefixedProtobuf)
+// codec = Codecs.protobuf, payload = [0x68, 0x65, ...]
+
+// Any collection of bytes works, including Data and slices of larger buffers
+let (_, contents) = try Data(prefixedProtobuf).decodeMulticodec(using: .utf8)
+// contents = "hello"
+
+// Or just drop the prefix, leaving a slice of the payload behind
+let bytes = try prefixedProtobuf.strippingMulticodecPrefix()
+// bytes = [0x68, 0x65, ...]
 
 // The multicodec codec values can be accessed directly:
 print(Codecs.dag_cbor.code) // 113
 
-// To get the string representation and description of a codec (e.g. for error messages):
-print(try Codecs(113).name)        // dag-cbor
-print(try Codecs(113).description) // Optional("MerkleDAG cbor")
+// Codecs are instantiable by code, name, or from the VarInt prefix
+print(try Codecs(code: 113).name)                // dag-cbor
+print(try Codecs(name: "dag-cbor").code)         // 113
+print(try Codecs(varInt: prefixedProtobuf).name) // protobuf
+
+// To get the codec table's description of a codec (e.g. for error messages):
+print(try Codecs(code: 113).details) // Optional("MerkleDAG cbor")
 ```
+
+### Tags and Status
+
+Every codec carries the table's own category and designation, so you don't have to maintain
+a list of, say, every multiaddr protocol and keep it in sync by hand.
+
+```swift
+// Codecs are categorized by tag
+print(Codecs.tcp.tag == .multiaddr) // true
+print(Codecs.dag_cbor.tag == .ipld) // true
+
+// And a whole category can be pulled out at once
+let protocols = Codecs.codecs(tagged: .multiaddr)
+
+// The table's designation reports the status of each codec
+print(Codecs.dag_pb.status)          // permanent
+print(Codecs.p2p_webrtc_star.status) // deprecated
+
+// You can filter out deprecated codecs like so...
+let writable = Codecs.codecs(tagged: .multiaddr).filter { $0.status != .deprecated }
+```
+
+Deprecated codecs are deliberately kept. Buffers written against them still exist and have to
+stay decodable.
 
 ### API
 

@@ -2,7 +2,7 @@
 //
 // This source file is part of the swift-libp2p open source project
 //
-// Copyright (c) 2022-2025 swift-libp2p project authors
+// Copyright (c) 2022-2026 swift-libp2p project authors
 // Licensed under MIT
 //
 // See LICENSE for license information
@@ -11,155 +11,144 @@
 // SPDX-License-Identifier: MIT
 //
 //===----------------------------------------------------------------------===//
-//
-//  Created by Teo Sartori
-//  Modified by Brandon Toms on 5/1/2022
 
 import Foundation
 import VarInt
 
-enum MulticodecError: Error {
-    case PrefixExtractionBufferTooSmall
-    case PrefixExtractionValueOverflow
-    case UnknownCodecString
-    case UnknownCodecId
-}
+// MARK: - Decoding
 
-/// Extract the prefix value from a multicodec prefixed byte buffer
-///
-/// - Parameter bytes: a multicodec prefixed byte buffer
-/// - Returns: the prefix value of the given data
-/// - Throws: PrefixExtractionBufferTooSmall if the buffer was too small. PrefixExtractionValueOverflow if the value was larger than 64 bits.
-public func extractPrefix(bytes: [UInt8]) throws -> UInt64 {
-    let (prefix, bytesRead) = uVarInt(bytes)
-    // Check for error condition
-    if prefix == 0 && bytesRead <= 0 {
-        if bytesRead == 0 { throw MulticodecError.PrefixExtractionBufferTooSmall }
-        throw MulticodecError.PrefixExtractionValueOverflow
+extension Codecs {
+
+    /// Decodes the Multicodec prefix at the front of `bytes`, along with the payload that follows it.
+    ///
+    /// ```swift
+    /// let (codec, payload) = try Codecs.decode(prefixed: buffer)
+    /// ```
+    ///
+    /// - Parameter bytes: a Multicodec prefixed byte buffer
+    /// - Returns: the Codec the buffer is prefixed with, and everything after the prefix
+    /// - Throws: `prefixExtractionBufferTooSmall` if the buffer ended before the
+    ///   prefix was complete, `prefixExtractionValueOverflow` if the prefix
+    ///   wasn't a valid, minimally encoded, 64 bit uVarInt, or `unknownCodecId`
+    ///   if no known codec goes by the decoded code.
+    public static func decode<Bytes: Collection<UInt8>>(
+        prefixed bytes: Bytes
+    ) throws -> (codec: Codecs, payload: Bytes.SubSequence) {
+        let (value, end) = try decodeVarIntPrefix(bytes)
+        guard let codec = Codecs(rawValue: value) else { throw MulticodecError.unknownCodecId }
+        return (codec: codec, payload: bytes[end...])
     }
-
-    return prefix
 }
 
-/// Return the prefix value for a given multicodec string
-///
-/// - Parameter multiCodec: the name of the multicodec
-/// - Returns: the prefix value for the given multicodec as bytes
-/// - Throws: UnknownCodecString if the name was invalid
-public func getPrefix(multiCodec: String) throws -> [UInt8] {
-    putUVarInt(try Codecs(multiCodec).rawValue)
-}
+// MARK: - Encoding
 
-/// Return the prefix value for a given multicodec string
-///
-/// - Parameter multiCodec: the name of the multicodec
-/// - Returns: the prefix value for the given multicodec as bytes
-/// - Throws: UnknownCodecString if the name was invalid
-public func getPrefix(multiCodec: Codecs) -> [UInt8] {
-    putUVarInt(multiCodec.rawValue)
-}
+extension Codecs {
 
-/// Add multicodec prefix to the front of the given byte buffer
-///
-/// - Parameters:
-///   - multiCode: the multicodec name to use for prefixing
-///   - bytes: the byte buffer to prefix
-/// - Returns: the prefixed byte buffer
-/// - Throws: UnknownCodecString if given an invalid multicodec name
-public func addPrefix(multiCodec: String, bytes: [UInt8]) throws -> [UInt8] {
-    try getPrefix(multiCodec: multiCodec) + bytes
-}
-
-/// Add multicodec prefix to the front of the given byte buffer
-///
-/// - Parameters:
-///   - code: the Int64 hex code equivalent of the multicodec to use for prefixing (0x...)
-///   - bytes: the byte buffer to prefix
-/// - Returns: the prefixed byte buffer
-/// - Throws: UnknownCodecString if given an invalid multicodec name
-public func addPrefix(code: Int64, bytes: [UInt8]) throws -> [UInt8] {
-    try getPrefix(multiCodec: try Codecs(code).name) + bytes
-}
-
-/// Add multicodec prefix to the front of the given byte buffer
-///
-/// - Parameters:
-///   - code: the UInt64 hex code equivalent of the multicodec to use for prefixing (0x...)
-///   - bytes: the byte buffer to prefix
-/// - Returns: the prefixed byte buffer
-/// - Throws: UnknownCodecString if given an invalid multicodec name
-public func addPrefix(code: UInt64, bytes: [UInt8]) throws -> [UInt8] {
-    try getPrefix(multiCodec: try Codecs(code).name) + bytes
-}
-
-/// Add multicodec prefix to the front of the given byte buffer
-///
-/// - Parameters:
-///   - code: the int hex code equivalent of the multicodec to use for prefixing (0x...)
-///   - bytes: the byte buffer to prefix
-/// - Returns: the prefixed byte buffer
-/// - Throws: UnknownCodecString if given an invalid multicodec name
-public func addPrefix(code: Int, bytes: [UInt8]) throws -> [UInt8] {
-    try getPrefix(multiCodec: try Codecs(code).name) + bytes
-}
-
-/// Add multicodec prefix to the front of the given byte buffer
-///
-/// - Parameters:
-///   - codec: the  Codec Enum of the multicodec to use for prefixing (ex: Codecs.p2p)
-///   - bytes: the byte buffer to prefix
-/// - Returns: the prefixed byte buffer
-public func addPrefix(codec: Codecs, bytes: [UInt8]) -> [UInt8] {
-    getPrefix(multiCodec: codec) + bytes
-}
-
-/// Remove the prefix from a prefixed byte buffer
-///
-/// - Parameter bytes: the prefixed byte buffer
-/// - Returns: the byte buffer without the prefix
-/// - Throws: See extractPrefix
-public func removePrefix(bytes: [UInt8]) throws -> [UInt8] {
-    let prefix = putUVarInt(try extractPrefix(bytes: bytes))
-    return Array(bytes[prefix.count...])
-}
-
-/// Get the codec name of the codec in the given byte buffer
-///
-/// - Parameter bytes: the multicodec prefixed byte buffer
-/// - Returns: the name of the multicodec prefix
-/// - Throws: see extractPrefix
-public func getCodec(bytes: [UInt8]) throws -> String {
-    try getCodecEnum(bytes: bytes).name
-}
-
-public func getCodecEnum(bytes: [UInt8]) throws -> Codecs {
-    let prefix = try extractPrefix(bytes: bytes)
-    return try Codecs(prefix)
+    /// Prefixes the given byte buffer with this Codec's VarInt encoded code
+    ///
+    /// ```swift
+    /// let prefixed = Codecs.protobuf.prefixing(bytes)
+    /// ```
+    ///
+    /// - Parameter bytes: the byte buffer to prefix
+    /// - Returns: the prefixed byte buffer
+    public func prefixing(_ bytes: some Collection<UInt8>) -> [UInt8] {
+        let prefix = self.asVarInt
+        var prefixed = [UInt8]()
+        prefixed.reserveCapacity(prefix.count + bytes.count)
+        prefixed.append(contentsOf: prefix)
+        prefixed.append(contentsOf: bytes)
+        return prefixed
+    }
 }
 
 extension String {
     /// Encodes a String into it's UTF8 Byte Array with the specified Multicodec prefix
     public func encodeUTF8(as codec: Codecs) -> [UInt8] {
-        addPrefix(codec: codec, bytes: Array(self.utf8))
+        codec.prefixing(self.utf8)
     }
 }
 
-extension Array where Element == UInt8 {
-    public func multiCodec() throws -> (codec: Codecs, bytes: [UInt8]) {
-        let codec = try getCodecEnum(bytes: self)
-        return (codec: codec, bytes: try removePrefix(bytes: self))
+// MARK: - Byte Collections
+
+extension Collection<UInt8> {
+
+    /// The Codec this buffer is prefixed with, and the bytes that follow the prefix
+    ///
+    /// - Returns: the codec, and a slice of this buffer without the prefix
+    /// - Throws: see `Codecs.decode(prefixed:)`
+    public func multicodec() throws -> (codec: Codecs, bytes: SubSequence) {
+        let (codec, payload) = try Codecs.decode(prefixed: self)
+        return (codec: codec, bytes: payload)
     }
 
-    public func extractCodec() throws -> (codec: Codecs, bytes: [UInt8]) {
-        let codec = try getCodecEnum(bytes: self)
-        return (codec: codec, bytes: try removePrefix(bytes: self))
+    /// The Multicodec prefix at the front of this buffer, whether or not a known codec goes by it
+    ///
+    /// - Returns: the prefix value of this buffer
+    /// - Throws: `prefixExtractionBufferTooSmall` if the buffer ended before the prefix
+    ///   was complete, or `prefixExtractionValueOverflow` if the prefix wasn't a valid,
+    ///   minimally encoded, 64 bit uVarInt.
+    public func multicodecPrefix() throws -> UInt64 {
+        try decodeVarIntPrefix(self).value
     }
 
+    /// This buffer without it's Multicodec prefix
+    ///
+    /// - Returns: a slice of this buffer without the prefix
+    /// - Throws: `prefixExtractionBufferTooSmall` if the buffer ended before the prefix
+    ///   was complete, or `prefixExtractionValueOverflow` if the prefix wasn't a valid,
+    ///   minimally encoded, 64 bit uVarInt.
+    public func strippingMulticodecPrefix() throws -> SubSequence {
+        let (_, end) = try decodeVarIntPrefix(self)
+        return self[end...]
+    }
+
+    /// The codec this buffer is prefixed with, and the bytes that follow the prefix decoded as a String
+    ///
+    /// - Parameter encoding: the encoding to decode the contents with
+    /// - Throws: `invalidStringEncoding` if the contents aren't valid in the given
+    ///   encoding, otherwise see `Codecs.decode(prefixed:)`
     public func decodeMulticodec(using encoding: String.Encoding) throws -> (codec: Codecs, contents: String) {
-        let codec = try getCodecEnum(bytes: self)
-        guard let str = String(bytes: try removePrefix(bytes: self), encoding: encoding) else {
-            throw MulticodecError.UnknownCodecId
-        }  //Better Error
+        let (codec, payload) = try Codecs.decode(prefixed: self)
+        guard let str = String(bytes: payload, encoding: encoding) else {
+            throw MulticodecError.invalidStringEncoding(encoding)
+        }
         return (codec: codec, contents: str)
+    }
+}
+
+// MARK: - Description
+
+extension Codecs: CustomStringConvertible {
+
+    /// This Codec's canonical name (ex: `dag-pb`)
+    ///
+    /// Interpolating a Codec spells it the way the multicodec table does, rather than the way
+    /// it's case is spelled in Swift.
+    /// ```swift
+    /// print("unsupported codec: \(Codecs.dag_pb)")  //unsupported codec: dag-pb
+    /// ```
+    ///
+    /// - Note: `name` is generated from the table, so it doesn't route back through this
+    ///   property the way it once did through `"\(self)"`.
+    public var description: String { self.name }
+}
+
+// MARK: - Internal
+
+/// Decodes the VarInt at the front of `bytes`, reporting failures as `MulticodecError`.
+///
+/// - Returns: the decoded prefix, and the index of the first byte after it.
+internal func decodeVarIntPrefix<Bytes: Collection<UInt8>>(
+    _ bytes: Bytes
+) throws -> (value: UInt64, end: Bytes.Index) {
+    do {
+        return try VarInt.decode(bytes)
+    } catch VarIntError.needsMoreBytes {
+        // The buffer was empty, or ended part way through the prefix
+        throw MulticodecError.prefixExtractionBufferTooSmall
+    } catch {
+        // The prefix didn't fit in 64 bits, or wasn't minimally encoded
+        throw MulticodecError.prefixExtractionValueOverflow
     }
 }
