@@ -47,6 +47,18 @@ struct MulticodecTests {
         #expect(Codecs.blake2b_8.name == "blake2b-8")
     }
 
+    /// Interpolating a Codec spells it the table's way, not the Swift case's way
+    @Test func testCodecDescription() throws {
+        #expect(Codecs.dag_pb.description == "dag-pb")
+        #expect("\(Codecs.dag_pb)" == "dag-pb")
+        #expect("\(Codecs.bls12_381_g1_pub)" == "bls12_381-g1-pub")
+
+        //`description` and `name` can't drift apart
+        for codec in Codecs.allCases {
+            #expect("\(codec)" == codec.name)
+        }
+    }
+
     /// A handful of codecs carry an underscore in their canonical name, which the case
     /// title can't distinguish from the underscores it substitutes for dashes. The name
     /// comes from the table verbatim so that these don't come back as `bls12-381-g1-pub`.

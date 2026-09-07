@@ -117,6 +117,23 @@ extension Collection<UInt8> {
     }
 }
 
+// MARK: - Description
+
+extension Codecs: CustomStringConvertible {
+
+    /// This Codec's canonical name (ex: `dag-pb`)
+    ///
+    /// Interpolating a Codec spells it the way the multicodec table does, rather than the way
+    /// it's case is spelled in Swift.
+    /// ```swift
+    /// print("unsupported codec: \(Codecs.dag_pb)")  //unsupported codec: dag-pb
+    /// ```
+    ///
+    /// - Note: `name` is generated from the table, so it doesn't route back through this
+    ///   property the way it once did through `"\(self)"`.
+    public var description: String { self.name }
+}
+
 // MARK: - Internal
 
 /// Decodes the VarInt at the front of `bytes`, reporting failures as `MulticodecError`.
