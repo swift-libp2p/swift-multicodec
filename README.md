@@ -53,9 +53,9 @@ let prefixedProtobuf = addPrefix(codec: .protobuf, bytes: protobuf)
 // The multicodec codec values can be accessed directly:
 print(Codecs.dag_cbor.code) // 113
 
-// To get the string representation and description of a codec (e.g. for error messages):
-print(try Codecs(113).name)        // dag-cbor
-print(try Codecs(113).description) // Optional("MerkleDAG cbor")
+// To get the name and the codec table's description of a codec (e.g. for error messages):
+print(try Codecs(113).name)    // dag-cbor
+print(try Codecs(113).details) // Optional("MerkleDAG cbor")
 ```
 
 ### API
