@@ -176,13 +176,13 @@ struct MulticodecTests {
     }
 
     @Test func testDecodePrefixedErrors() throws {
-        #expect(throws: MultiCodecError.unknownCodecId) {
+        #expect(throws: MulticodecError.unknownCodecId) {
             try Codecs.decode(prefixed: UInt64(0xffee).varIntBytes.bytes + Array("hey".utf8))
         }
-        #expect(throws: MultiCodecError.prefixExtractionBufferTooSmall) {
+        #expect(throws: MulticodecError.prefixExtractionBufferTooSmall) {
             try Codecs.decode(prefixed: [UInt8]())
         }
-        #expect(throws: MultiCodecError.prefixExtractionBufferTooSmall) {
+        #expect(throws: MulticodecError.prefixExtractionBufferTooSmall) {
             try Codecs.decode(prefixed: [0x80] as [UInt8])
         }
     }
@@ -276,7 +276,7 @@ struct MulticodecTests {
 
     /// throws error on unknown codec name when getting the code
     @Test func testStringInstantiationWithUnknownCodecName() throws {
-        #expect(throws: MultiCodecError.unknownCodecString) {
+        #expect(throws: MulticodecError.unknownCodecString) {
             try Codecs(name: "this-codec-doesnt-exist")
         }
     }
@@ -289,13 +289,13 @@ struct MulticodecTests {
         let prefixedBuf = code + buf
 
         //Ensure it throws the unknownCodecId Error...
-        #expect(throws: MultiCodecError.unknownCodecId) {
+        #expect(throws: MulticodecError.unknownCodecId) {
             try prefixedBuf.multiCodec()
         }
     }
 
     @Test func testPrefixBufferWithUnknownCodec() throws {
-        #expect(throws: MultiCodecError.unknownCodecId) {
+        #expect(throws: MulticodecError.unknownCodecId) {
             try Codecs(code: 0xffee)
         }
     }
@@ -303,7 +303,7 @@ struct MulticodecTests {
     /// An empty buffer throws `needsMoreBytes` at the VarInt layer; ensure it
     /// throws instead of silently resolving to the `identity` (0x00) codec.
     @Test func testCodecFromEmptyBytesThrows() throws {
-        #expect(throws: MultiCodecError.unknownCodecId) {
+        #expect(throws: MulticodecError.unknownCodecId) {
             try Codecs(varInt: [UInt8]())
         }
     }
@@ -311,7 +311,7 @@ struct MulticodecTests {
     /// A truncated VarInt (a lone continuation byte) also throws at the VarInt
     /// layer; ensure it throws rather than resolving to `identity`.
     @Test func testCodecFromTruncatedVarIntThrows() throws {
-        #expect(throws: MultiCodecError.unknownCodecId) {
+        #expect(throws: MulticodecError.unknownCodecId) {
             try Codecs(varInt: [0x80] as [UInt8])
         }
     }
@@ -322,19 +322,19 @@ struct MulticodecTests {
     }
 
     @Test func testNegativeCodeInstantiationThrows() throws {
-        #expect(throws: MultiCodecError.unknownCodecId) {
+        #expect(throws: MulticodecError.unknownCodecId) {
             try Codecs(code: -1)
         }
-        #expect(throws: MultiCodecError.unknownCodecId) {
+        #expect(throws: MulticodecError.unknownCodecId) {
             try Codecs(code: Int64.min)
         }
     }
 
     @Test func testStrippingPrefixFromTruncatedBufferThrows() throws {
-        #expect(throws: MultiCodecError.prefixExtractionBufferTooSmall) {
+        #expect(throws: MulticodecError.prefixExtractionBufferTooSmall) {
             try [UInt8]().strippingMulticodecPrefix()
         }
-        #expect(throws: MultiCodecError.prefixExtractionBufferTooSmall) {
+        #expect(throws: MulticodecError.prefixExtractionBufferTooSmall) {
             try ([0x80] as [UInt8]).multicodecPrefix()
         }
     }
@@ -343,14 +343,14 @@ struct MulticodecTests {
         //A valid protobuf prefix followed by an invalid UTF8 sequence
         let prefixedBuf = Codecs.protobuf.prefixing([0xc3, 0x28] as [UInt8])
 
-        #expect(throws: MultiCodecError.invalidStringEncoding(.utf8)) {
+        #expect(throws: MulticodecError.invalidStringEncoding(.utf8)) {
             try prefixedBuf.decodeMultiCodec(using: .utf8)
         }
     }
 
     @Test func testErrorDescription() throws {
-        #expect("\(MultiCodecError.unknownCodecId)" == "no known codec goes by that code")
-        #expect("\(MultiCodecError.invalidStringEncoding(.utf8))".contains("\(String.Encoding.utf8.rawValue)"))
+        #expect("\(MulticodecError.unknownCodecId)" == "no known codec goes by that code")
+        #expect("\(MulticodecError.invalidStringEncoding(.utf8))".contains("\(String.Encoding.utf8.rawValue)"))
     }
 
     @Test func testCodecDetails() throws {

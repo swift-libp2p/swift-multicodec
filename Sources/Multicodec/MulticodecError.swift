@@ -15,7 +15,7 @@
 import Foundation
 
 /// The errors thrown by this module.
-public enum MultiCodecError: Error, Hashable, Sendable {
+public enum MulticodecError: Error, Hashable, Sendable {
 
     /// The buffer was empty, or ended part way through the multicodec prefix.
     ///
@@ -36,7 +36,7 @@ public enum MultiCodecError: Error, Hashable, Sendable {
     case invalidStringEncoding(String.Encoding)
 }
 
-extension MultiCodecError: CustomStringConvertible {
+extension MulticodecError: CustomStringConvertible {
     public var description: String {
         switch self {
         case .prefixExtractionBufferTooSmall:

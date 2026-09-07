@@ -694,7 +694,7 @@ public enum Codecs: UInt64, CaseIterable, Equatable, Sendable {
     /// - Note: The string name is lowercased and replaces dashes (-) for underscores (_) before checking for a match...
     public init(name: String) throws {
         let n = name.replacingOccurrences(of: "-", with: "_").lowercased()
-        guard let match = Codecs.allCases.first(where: { "\($0)" == n }) else { throw MultiCodecError.unknownCodecString }
+        guard let match = Codecs.allCases.first(where: { "\($0)" == n }) else { throw MulticodecError.unknownCodecString }
         self = match
     }
 
@@ -703,25 +703,25 @@ public enum Codecs: UInt64, CaseIterable, Equatable, Sendable {
     ///  let p2p = try? Codecs(varInt: [0xa5, 0x03])
     /// ```
     public init(varInt bytes: some Collection<UInt8>) throws {
-        guard let value = try? VarInt.decode(bytes).value, let s = Codecs(rawValue: value) else { throw MultiCodecError.unknownCodecId }
+        guard let value = try? VarInt.decode(bytes).value, let s = Codecs(rawValue: value) else { throw MulticodecError.unknownCodecId }
         self = s
     }
 
     /// Instantiation via a Codec's integer code (ex: 0x70)
     public init(code: Int) throws {
-        guard let raw = UInt64(exactly: code), let s = Codecs(rawValue: raw) else { throw MultiCodecError.unknownCodecId }
+        guard let raw = UInt64(exactly: code), let s = Codecs(rawValue: raw) else { throw MulticodecError.unknownCodecId }
         self = s
     }
 
     /// Instantiation via a Codec's integer code (ex: 0x70)
     public init(code: Int64) throws {
-        guard let raw = UInt64(exactly: code), let s = Codecs(rawValue: raw) else { throw MultiCodecError.unknownCodecId }
+        guard let raw = UInt64(exactly: code), let s = Codecs(rawValue: raw) else { throw MulticodecError.unknownCodecId }
         self = s
     }
 
     /// Instantiation via a Codec's integer code (ex: 0x70)
     public init(code: UInt64) throws {
-        guard let s = Codecs(rawValue: code) else { throw MultiCodecError.unknownCodecId }
+        guard let s = Codecs(rawValue: code) else { throw MulticodecError.unknownCodecId }
         self = s
     }
 
